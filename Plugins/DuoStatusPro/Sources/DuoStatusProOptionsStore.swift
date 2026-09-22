@@ -1,10 +1,10 @@
 import Foundation
 import MacToolsPluginKit
 
-/// Persists `StatusTrioIconOptions` through the plugin's scoped storage.
+/// Persists `DuoStatusProIconOptions` through the plugin's scoped storage.
 /// Keys are stable and must not be renamed without a migration.
 @MainActor
-struct StatusTrioOptionsStore {
+struct DuoStatusProOptionsStore {
     enum Key {
         static let showsBatteryPercentage = "shows-battery-percentage"
         static let showsPercentageWhenConnected = "shows-percentage-when-connected"
@@ -19,6 +19,8 @@ struct StatusTrioOptionsStore {
         static let volumeDisplayStyle = "volume-display-style"
         static let bluetoothGlyphReplacesNetworkIcon = "bluetooth-glyph-replaces-network-icon"
         static let bluetoothGlyphPrioritizesNetworkErrors = "bluetooth-glyph-prioritizes-network-errors"
+        static let hidesSystemBattery = "hides-system-battery"
+        static let hidesSystemWiFi = "hides-system-wifi"
     }
 
     static let criticalThresholdRange = 5...50
@@ -30,8 +32,8 @@ struct StatusTrioOptionsStore {
         self.storage = storage
     }
 
-    func load() -> StatusTrioIconOptions {
-        var options = StatusTrioIconOptions.default
+    func load() -> DuoStatusProIconOptions {
+        var options = DuoStatusProIconOptions.default
         options.showsBatteryPercentage = bool(Key.showsBatteryPercentage, default: options.showsBatteryPercentage)
         options.showsPercentageWhenConnected = bool(
             Key.showsPercentageWhenConnected, default: options.showsPercentageWhenConnected
@@ -42,7 +44,7 @@ struct StatusTrioOptionsStore {
             options.batteryCriticalThreshold = Self.clampedThreshold(threshold)
         }
         if let raw = storage.string(forKey: Key.ringStrokeStyle),
-           let style = StatusTrioRingStrokeStyle(rawValue: raw) {
+           let style = DuoStatusProRingStrokeStyle(rawValue: raw) {
             options.ringStrokeStyle = style
         }
         options.showsWiFiIconForEthernet = bool(Key.showsWiFiIconForEthernet, default: options.showsWiFiIconForEthernet)
@@ -54,7 +56,7 @@ struct StatusTrioOptionsStore {
             Key.showsWiFiIconForInternetSharing, default: options.showsWiFiIconForInternetSharing
         )
         if let raw = storage.string(forKey: Key.volumeDisplayStyle),
-           let style = StatusTrioVolumeDisplayStyle(rawValue: raw) {
+           let style = DuoStatusProVolumeDisplayStyle(rawValue: raw) {
             options.volumeDisplayStyle = style
         }
         options.bluetoothGlyphReplacesNetworkIcon = bool(
@@ -63,10 +65,12 @@ struct StatusTrioOptionsStore {
         options.bluetoothGlyphPrioritizesNetworkErrors = bool(
             Key.bluetoothGlyphPrioritizesNetworkErrors, default: options.bluetoothGlyphPrioritizesNetworkErrors
         )
+        options.hidesSystemBattery = bool(Key.hidesSystemBattery, default: options.hidesSystemBattery)
+        options.hidesSystemWiFi = bool(Key.hidesSystemWiFi, default: options.hidesSystemWiFi)
         return options
     }
 
-    func save(_ options: StatusTrioIconOptions) {
+    func save(_ options: DuoStatusProIconOptions) {
         storage.set(options.showsBatteryPercentage, forKey: Key.showsBatteryPercentage)
         storage.set(options.showsPercentageWhenConnected, forKey: Key.showsPercentageWhenConnected)
         storage.set(options.showsChargingIndicator, forKey: Key.showsChargingIndicator)
@@ -80,6 +84,8 @@ struct StatusTrioOptionsStore {
         storage.set(options.volumeDisplayStyle.rawValue, forKey: Key.volumeDisplayStyle)
         storage.set(options.bluetoothGlyphReplacesNetworkIcon, forKey: Key.bluetoothGlyphReplacesNetworkIcon)
         storage.set(options.bluetoothGlyphPrioritizesNetworkErrors, forKey: Key.bluetoothGlyphPrioritizesNetworkErrors)
+        storage.set(options.hidesSystemBattery, forKey: Key.hidesSystemBattery)
+        storage.set(options.hidesSystemWiFi, forKey: Key.hidesSystemWiFi)
     }
 
     static func clampedThreshold(_ value: Int) -> Int {

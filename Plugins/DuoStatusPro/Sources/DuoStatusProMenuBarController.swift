@@ -2,34 +2,34 @@ import AppKit
 import MacToolsPluginKit
 
 @MainActor
-protocol StatusTrioMenuBarPresenting: AnyObject {
+protocol DuoStatusProMenuBarPresenting: AnyObject {
     var openSettings: (() -> Void)? { get set }
-    func update(snapshot: StatusTrioSnapshot, options: StatusTrioIconOptions, tooltip: String)
+    func update(snapshot: DuoStatusProSnapshot, options: DuoStatusProIconOptions, tooltip: String)
     func remove()
 }
 
 @MainActor
-final class StatusTrioMenuBarController: NSObject, StatusTrioMenuBarPresenting {
+final class DuoStatusProMenuBarController: NSObject, DuoStatusProMenuBarPresenting {
     var openSettings: (() -> Void)?
     private var item: NSStatusItem?
-    private var appearanceObserver: StatusTrioAppearanceObserverView?
-    private var snapshot: StatusTrioSnapshot?
-    private var options: StatusTrioIconOptions = .default
+    private var appearanceObserver: DuoStatusProAppearanceObserverView?
+    private var snapshot: DuoStatusProSnapshot?
+    private var options: DuoStatusProIconOptions = .default
     private var tooltip: String?
-    private let iconPresentation = StatusTrioIconPresentation()
+    private let iconPresentation = DuoStatusProIconPresentation()
     private var isRedrawScheduled = false
 
     isolated deinit {
         remove()
     }
 
-    func update(snapshot: StatusTrioSnapshot, options: StatusTrioIconOptions, tooltip: String) {
+    func update(snapshot: DuoStatusProSnapshot, options: DuoStatusProIconOptions, tooltip: String) {
         self.snapshot = snapshot
         self.options = options
         if item == nil {
             PluginPresentationSafety.prepareForWindowOrdering()
             let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-            item.autosaveName = "StatusTrio"
+            item.autosaveName = "DuoStatusPro"
             item.button?.target = self
             item.button?.action = #selector(clicked)
             item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -38,7 +38,7 @@ final class StatusTrioMenuBarController: NSObject, StatusTrioMenuBarPresenting {
 
             // A menu bar can change appearance with its wallpaper or display,
             // independently of the host app's selected appearance.
-            let observer = StatusTrioAppearanceObserverView(frame: .zero)
+            let observer = DuoStatusProAppearanceObserverView(frame: .zero)
             observer.setAccessibilityElement(false)
             item.button?.addSubview(observer)
             observer.onAppearanceChange = { [weak self] in
@@ -84,7 +84,7 @@ final class StatusTrioMenuBarController: NSObject, StatusTrioMenuBarPresenting {
         guard let snapshot, let button = item?.button else { return }
         let isDark = button.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
         iconPresentation.update(on: button, snapshot: snapshot, options: options, context: .init(
-            pointSize: StatusTrioIconRenderer.defaultSize,
+            pointSize: DuoStatusProIconRenderer.defaultSize,
             displayScale: button.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2,
             appearance: isDark ? .dark : .light
         ))
@@ -96,10 +96,10 @@ final class StatusTrioMenuBarController: NSObject, StatusTrioMenuBarPresenting {
 }
 
 @MainActor
-final class StatusTrioIconPresentation {
+final class DuoStatusProIconPresentation {
     private struct RenderState: Equatable {
-        let snapshot: StatusTrioSnapshot
-        let options: StatusTrioIconOptions
+        let snapshot: DuoStatusProSnapshot
+        let options: DuoStatusProIconOptions
         let context: PluginMenuBarIconRenderContext
     }
 
@@ -109,8 +109,8 @@ final class StatusTrioIconPresentation {
 
     func update(
         on button: NSButton,
-        snapshot: StatusTrioSnapshot,
-        options: StatusTrioIconOptions,
+        snapshot: DuoStatusProSnapshot,
+        options: DuoStatusProIconOptions,
         context: PluginMenuBarIconRenderContext
     ) {
         let state = RenderState(snapshot: snapshot, options: options, context: context)
@@ -118,7 +118,7 @@ final class StatusTrioIconPresentation {
         // AppKit can notify appearance changes while replicating a status item.
         // Reassigning an unchanged image here can schedule another replication.
         lastRenderState = state
-        button.image = StatusTrioIconRenderer.image(
+        button.image = DuoStatusProIconRenderer.image(
             for: snapshot,
             options: options,
             appearance: context.appearance == .dark ? .dark : .light,
@@ -127,7 +127,7 @@ final class StatusTrioIconPresentation {
     }
 }
 
-private final class StatusTrioAppearanceObserverView: NSView {
+private final class DuoStatusProAppearanceObserverView: NSView {
     var onAppearanceChange: (() -> Void)?
 
     override func viewDidChangeEffectiveAppearance() {

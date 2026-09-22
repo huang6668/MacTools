@@ -4,14 +4,14 @@ import CoreText
 
 // Adapted from Status Trio (https://github.com/lingyired/status-trio, Apache-2.0).
 
-enum StatusTrioIconAppearance: Equatable, Sendable {
+enum DuoStatusProIconAppearance: Equatable, Sendable {
     case light
     case dark
 }
 
 /// Draws the battery ring, the network glyph, and the volume marks into one
 /// menu-bar image. The image is a template unless a status color is in use.
-enum StatusTrioIconRenderer {
+enum DuoStatusProIconRenderer {
     static let defaultSize = NSSize(width: 24, height: 24)
 
     private static let centerSymbolBasePointSize: CGFloat = 38
@@ -32,15 +32,15 @@ enum StatusTrioIconRenderer {
     ]
 
     static func image(
-        for snapshot: StatusTrioSnapshot,
-        options: StatusTrioIconOptions,
-        appearance: StatusTrioIconAppearance,
+        for snapshot: DuoStatusProSnapshot,
+        options: DuoStatusProIconOptions,
+        appearance: DuoStatusProIconAppearance,
         pointSize: NSSize = defaultSize
     ) -> NSImage {
         let size = validatedSize(pointSize)
         let palette = Palette(appearance: appearance)
-        let colorRole = StatusTrioIconMappings.batteryColorRole(snapshot.battery, options: options)
-        let replacesNetworkIcon = StatusTrioIconMappings.shouldReplaceNetworkIcon(
+        let colorRole = DuoStatusProIconMappings.batteryColorRole(snapshot.battery, options: options)
+        let replacesNetworkIcon = DuoStatusProIconMappings.shouldReplaceNetworkIcon(
             volume: snapshot.volume,
             wifi: snapshot.wifi,
             connection: snapshot.connection,
@@ -74,7 +74,7 @@ enum StatusTrioIconRenderer {
         let lowPower: NSColor
         let bluetooth: NSColor
 
-        init(appearance: StatusTrioIconAppearance) {
+        init(appearance: DuoStatusProIconAppearance) {
             switch appearance {
             case .light:
                 foreground = .black
@@ -93,7 +93,7 @@ enum StatusTrioIconRenderer {
 
         var inactive: NSColor { foreground.withAlphaComponent(inactiveTrackAlpha) }
 
-        func color(for role: StatusTrioBatteryColorRole) -> NSColor {
+        func color(for role: DuoStatusProBatteryColorRole) -> NSColor {
             switch role {
             case .foreground: foreground
             case .critical: critical
@@ -113,9 +113,9 @@ enum StatusTrioIconRenderer {
     // MARK: Composition
 
     private static func draw(
-        _ snapshot: StatusTrioSnapshot,
-        options: StatusTrioIconOptions,
-        colorRole: StatusTrioBatteryColorRole,
+        _ snapshot: DuoStatusProSnapshot,
+        options: DuoStatusProIconOptions,
+        colorRole: DuoStatusProBatteryColorRole,
         replacesNetworkIcon: Bool,
         palette: Palette,
         in context: CGContext,
@@ -125,7 +125,7 @@ enum StatusTrioIconRenderer {
         defer { context.restoreGState() }
 
         // Uniform scale, centered, with the canvas flipped so its origin is top-left.
-        let canvas = StatusTrioIconGeometry.canvas
+        let canvas = DuoStatusProIconGeometry.canvas
         let scale = min(size.width, size.height) / canvas.width
         let offsetX = (size.width - canvas.width * scale) / 2
         let offsetY = (size.height - canvas.height * scale) / 2
@@ -152,27 +152,27 @@ enum StatusTrioIconRenderer {
     // MARK: Battery
 
     private static func drawBattery(
-        _ battery: StatusTrioBatteryStatus,
-        options: StatusTrioIconOptions,
-        colorRole: StatusTrioBatteryColorRole,
+        _ battery: DuoStatusProBatteryStatus,
+        options: DuoStatusProIconOptions,
+        colorRole: DuoStatusProBatteryColorRole,
         palette: Palette,
         in context: CGContext
     ) {
-        let gapContent = StatusTrioIconMappings.batteryGapContent(battery, options: options)
+        let gapContent = DuoStatusProIconMappings.batteryGapContent(battery, options: options)
         let hasTopGap = gapContent != .empty
         let topGapWidth: CGFloat = switch gapContent {
-        case .bolt, .plug: StatusTrioIconGeometry.batteryChargingBoltTopGapWidth
-        case .percentage, .empty: StatusTrioIconGeometry.batteryValueTopGapWidth
+        case .bolt, .plug: DuoStatusProIconGeometry.batteryChargingBoltTopGapWidth
+        case .percentage, .empty: DuoStatusProIconGeometry.batteryValueTopGapWidth
         }
 
         context.setLineWidth(8 * options.ringStrokeScale)
         context.setStrokeColor(palette.inactive.cgColor)
-        context.addPath(StatusTrioIconGeometry.batteryTrack(hasTopGap: hasTopGap, topGapWidth: topGapWidth))
+        context.addPath(DuoStatusProIconGeometry.batteryTrack(hasTopGap: hasTopGap, topGapWidth: topGapWidth))
         context.strokePath()
 
         context.setStrokeColor(palette.color(for: colorRole).cgColor)
-        context.addPath(StatusTrioIconGeometry.batteryFill(
-            progress: StatusTrioIconMappings.batteryProgress(battery),
+        context.addPath(DuoStatusProIconGeometry.batteryFill(
+            progress: DuoStatusProIconMappings.batteryProgress(battery),
             hasTopGap: hasTopGap,
             topGapWidth: topGapWidth
         ))
@@ -182,7 +182,7 @@ enum StatusTrioIconRenderer {
         switch gapContent {
         case .bolt:
             context.setFillColor(palette.foreground.cgColor)
-            context.addPath(StatusTrioIconGeometry.batteryChargingBolt(scale: indicatorScale))
+            context.addPath(DuoStatusProIconGeometry.batteryChargingBolt(scale: indicatorScale))
             context.fillPath()
         case .plug:
             drawBatteryPlug(boltScale: indicatorScale, foreground: palette.foreground, in: context)
@@ -196,14 +196,14 @@ enum StatusTrioIconRenderer {
     /// Draws the plug at the bolt's optical size and center, so the ring's top
     /// gap reads the same whichever indicator is showing.
     private static func drawBatteryPlug(boltScale: CGFloat, foreground: NSColor, in context: CGContext) {
-        let boltHeight = StatusTrioIconGeometry.batteryChargingBolt().boundingBoxOfPath.height
-        let targetHeight = boltHeight * boltScale * StatusTrioIconGeometry.batteryPlugHeightScale
+        let boltHeight = DuoStatusProIconGeometry.batteryChargingBolt().boundingBoxOfPath.height
+        let targetHeight = boltHeight * boltScale * DuoStatusProIconGeometry.batteryPlugHeightScale
         guard targetHeight.isFinite, targetHeight > 0 else { return }
 
         drawSymbol(
-            name: StatusTrioIconGeometry.batteryPlugSymbolName,
+            name: DuoStatusProIconGeometry.batteryPlugSymbolName,
             pointSize: batteryPlugPointSize(targetHeight: targetHeight),
-            center: StatusTrioIconGeometry.batteryTopIndicatorCenter(boltScale: boltScale),
+            center: DuoStatusProIconGeometry.batteryTopIndicatorCenter(boltScale: boltScale),
             color: foreground,
             in: context
         )
@@ -223,7 +223,7 @@ enum StatusTrioIconRenderer {
         var descent: CGFloat = 0
         var leading: CGFloat = 0
         let width = CGFloat(CTLineGetTypographicBounds(line, &ascent, &descent, &leading))
-        let baseline = StatusTrioIconGeometry.batteryValueBaseline(fontSize: fontSize)
+        let baseline = DuoStatusProIconGeometry.batteryValueBaseline(fontSize: fontSize)
 
         context.saveGState()
         defer { context.restoreGState() }
@@ -235,7 +235,7 @@ enum StatusTrioIconRenderer {
     }
 
     private static var batteryValueFontSize: CGFloat {
-        StatusTrioIconGeometry.batteryValueBaseFontSize * batteryTextScale
+        DuoStatusProIconGeometry.batteryValueBaseFontSize * batteryTextScale
     }
 
     private static func batteryValueFont(size: CGFloat) -> NSFont {
@@ -248,10 +248,10 @@ enum StatusTrioIconRenderer {
 
     /// The bolt is calibrated to match the height of the percentage numerals.
     private static func batteryChargingBoltScale() -> CGFloat {
-        let boltHeight = StatusTrioIconGeometry.batteryChargingBolt().boundingBoxOfPath.height
+        let boltHeight = DuoStatusProIconGeometry.batteryChargingBolt().boundingBoxOfPath.height
         let targetHeight = batteryTopIndicatorHeight()
         guard boltHeight.isFinite, boltHeight > 0, targetHeight > 0 else {
-            return StatusTrioIconGeometry.batteryChargingBoltCalibration
+            return DuoStatusProIconGeometry.batteryChargingBoltCalibration
         }
         return targetHeight / boltHeight
     }
@@ -265,10 +265,10 @@ enum StatusTrioIconRenderer {
         )
         let glyphHeight = CTLineGetBoundsWithOptions(line, [.useGlyphPathBounds]).height
         guard glyphHeight.isFinite, glyphHeight > 0 else {
-            return StatusTrioIconGeometry.batteryChargingBolt().boundingBoxOfPath.height
-                * StatusTrioIconGeometry.batteryChargingBoltCalibration
+            return DuoStatusProIconGeometry.batteryChargingBolt().boundingBoxOfPath.height
+                * DuoStatusProIconGeometry.batteryChargingBoltCalibration
         }
-        return glyphHeight * StatusTrioIconGeometry.batteryChargingBoltCalibration
+        return glyphHeight * DuoStatusProIconGeometry.batteryChargingBoltCalibration
     }
 
     /// Glyph height per point of symbol size. SF Symbols report sizes rounded
@@ -277,7 +277,7 @@ enum StatusTrioIconRenderer {
     private static func batteryPlugHeightPerPoint() -> CGFloat {
         let referencePointSize: CGFloat = 200
         guard let height = configuredSymbol(
-            name: StatusTrioIconGeometry.batteryPlugSymbolName,
+            name: DuoStatusProIconGeometry.batteryPlugSymbolName,
             pointSize: referencePointSize,
             color: .black
         )?.size.height, height.isFinite, height > 0 else {
@@ -295,8 +295,8 @@ enum StatusTrioIconRenderer {
     // MARK: Network
 
     private static func drawWiFi(
-        _ wifi: StatusTrioWiFiStatus,
-        options: StatusTrioIconOptions,
+        _ wifi: DuoStatusProWiFiStatus,
+        options: DuoStatusProIconOptions,
         palette: Palette,
         in context: CGContext
     ) {
@@ -324,8 +324,8 @@ enum StatusTrioIconRenderer {
         }
     }
 
-    private static func drawStandardWiFi(_ wifi: StatusTrioWiFiStatus, palette: Palette, in context: CGContext) {
-        let bars = StatusTrioIconMappings.wifiBars(rssi: wifi.rssi)
+    private static func drawStandardWiFi(_ wifi: DuoStatusProWiFiStatus, palette: Palette, in context: CGContext) {
+        let bars = DuoStatusProIconMappings.wifiBars(rssi: wifi.rssi)
         guard bars > 0 else {
             drawSymbol(name: "wifi", variableValue: 0, pointSize: centerSymbolBasePointSize, color: palette.inactive, in: context)
             return
@@ -341,15 +341,15 @@ enum StatusTrioIconRenderer {
 
     private static func drawEthernet(palette: Palette, in context: CGContext) {
         context.setStrokeColor(palette.foreground.cgColor)
-        context.setLineWidth(StatusTrioIconGeometry.ethernetStrokeWidth)
-        for path in StatusTrioIconGeometry.ethernetChevrons() {
+        context.setLineWidth(DuoStatusProIconGeometry.ethernetStrokeWidth)
+        for path in DuoStatusProIconGeometry.ethernetChevrons() {
             context.addPath(path)
             context.strokePath()
         }
 
         context.setFillColor(palette.foreground.cgColor)
-        let radius = StatusTrioIconGeometry.ethernetDotRadius
-        for point in StatusTrioIconGeometry.ethernetDots() {
+        let radius = DuoStatusProIconGeometry.ethernetDotRadius
+        for point in DuoStatusProIconGeometry.ethernetDots() {
             context.fillEllipse(in: CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2))
         }
     }
@@ -363,15 +363,15 @@ enum StatusTrioIconRenderer {
         context.setFillColor(foreground.cgColor)
         context.setStrokeColor(foreground.cgColor)
         context.setLineWidth(7)
-        context.addPath(StatusTrioIconGeometry.temporaryWedge())
+        context.addPath(DuoStatusProIconGeometry.temporaryWedge())
         context.drawPath(using: .fillStroke)
 
         context.saveGState()
         context.setBlendMode(.clear)
         context.setLineWidth(2.5)
-        context.addPath(StatusTrioIconGeometry.temporaryScreenOutline())
+        context.addPath(DuoStatusProIconGeometry.temporaryScreenOutline())
         context.strokePath()
-        context.addPath(StatusTrioIconGeometry.temporaryScreenStand())
+        context.addPath(DuoStatusProIconGeometry.temporaryScreenStand())
         context.fillPath()
         context.restoreGState()
     }
@@ -385,12 +385,12 @@ enum StatusTrioIconRenderer {
         context.setFillColor(foreground.cgColor)
         context.setStrokeColor(foreground.cgColor)
         context.setLineWidth(7)
-        context.addPath(StatusTrioIconGeometry.sharedWedge())
+        context.addPath(DuoStatusProIconGeometry.sharedWedge())
         context.drawPath(using: .fillStroke)
 
         context.saveGState()
         context.setBlendMode(.clear)
-        context.addPath(StatusTrioIconGeometry.sharedArrowCutout())
+        context.addPath(DuoStatusProIconGeometry.sharedArrowCutout())
         context.fillPath()
         context.restoreGState()
     }
@@ -412,8 +412,8 @@ enum StatusTrioIconRenderer {
     // MARK: Volume
 
     private static func drawVolume(
-        _ volume: StatusTrioVolumeStatus,
-        options: StatusTrioIconOptions,
+        _ volume: DuoStatusProVolumeStatus,
+        options: DuoStatusProIconOptions,
         palette: Palette,
         in context: CGContext
     ) {
@@ -422,21 +422,21 @@ enum StatusTrioIconRenderer {
 
         switch options.volumeDisplayStyle {
         case .dots:
-            let level = StatusTrioIconMappings.volumeSteps(scalar: volume.scalar, isMuted: volume.isMuted)
-            let radius = StatusTrioIconGeometry.volumeDotRadius * options.volumeDotRadiusScale
-            for (index, point) in StatusTrioIconGeometry.volumeDots().enumerated() {
+            let level = DuoStatusProIconMappings.volumeSteps(scalar: volume.scalar, isMuted: volume.isMuted)
+            let radius = DuoStatusProIconGeometry.volumeDotRadius * options.volumeDotRadiusScale
+            for (index, point) in DuoStatusProIconGeometry.volumeDots().enumerated() {
                 context.setFillColor(index < level ? activeColor : hiddenColor)
                 context.fillEllipse(in: CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2))
             }
         case .arc:
             context.setLineWidth(7 * options.ringStrokeScale)
             context.setStrokeColor(hiddenColor)
-            context.addPath(StatusTrioIconGeometry.volumeArcTrack())
+            context.addPath(DuoStatusProIconGeometry.volumeArcTrack())
             context.strokePath()
 
             guard !volume.isMuted, let scalar = volume.scalar, scalar.isFinite, scalar > 0 else { return }
             context.setStrokeColor(activeColor)
-            context.addPath(StatusTrioIconGeometry.volumeArcFill(progress: scalar))
+            context.addPath(DuoStatusProIconGeometry.volumeArcFill(progress: scalar))
             context.strokePath()
         }
     }
@@ -449,7 +449,7 @@ enum StatusTrioIconRenderer {
         name: String,
         variableValue: Double? = nil,
         pointSize: CGFloat,
-        center: CGPoint = StatusTrioIconGeometry.centerSymbolCenter,
+        center: CGPoint = DuoStatusProIconGeometry.centerSymbolCenter,
         color: NSColor,
         in context: CGContext
     ) {

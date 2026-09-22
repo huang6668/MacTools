@@ -6,7 +6,7 @@ import OSLog
 import SystemConfiguration
 
 // Adapted from Status Trio (https://github.com/lingyired/status-trio, Apache-2.0).
-// Only the reads that feed `StatusTrioSnapshot` are carried over; AirPods
+// Only the reads that feed `DuoStatusProSnapshot` are carried over; AirPods
 // battery, output-device enumeration, and SSID lookups are intentionally absent.
 
 // MARK: - Pure classification
@@ -14,7 +14,7 @@ import SystemConfiguration
 /// Maps CoreWLAN interface flags plus the current network path to a Wi-Fi state.
 /// Precedence matches the upstream classifier: off, notAssociated, shared,
 /// temporary, hotspot, noInternet, connected.
-enum StatusTrioWiFiClassifier {
+enum DuoStatusProWiFiClassifier {
     /// - Parameters:
     ///   - pathSatisfied: `nil` when no path update has arrived yet. An unknown
     ///     path never downgrades an associated interface to `noInternet`.
@@ -26,7 +26,7 @@ enum StatusTrioWiFiClassifier {
         pathSatisfied: Bool?,
         usesWiFi: Bool,
         isExpensive: Bool
-    ) -> StatusTrioWiFiState {
+    ) -> DuoStatusProWiFiState {
         if !powerOn { return .off }
         if !serviceActive { return .notAssociated }
         if sharingActive { return .shared }
@@ -46,7 +46,7 @@ enum StatusTrioWiFiClassifier {
 }
 
 /// Reduces an `NWPath` to the fields the snapshot and the Wi-Fi classifier need.
-struct StatusTrioNetworkPathSnapshot: Equatable, Sendable {
+struct DuoStatusProNetworkPathSnapshot: Equatable, Sendable {
     var isSatisfied: Bool
     var usesWiFi: Bool
     var usesWiredEthernet: Bool
@@ -64,8 +64,8 @@ struct StatusTrioNetworkPathSnapshot: Equatable, Sendable {
         self.isExpensive = isExpensive
     }
 
-    var connection: StatusTrioNetworkConnection {
-        StatusTrioNetworkConnectionResolver.resolve(
+    var connection: DuoStatusProNetworkConnection {
+        DuoStatusProNetworkConnectionResolver.resolve(
             satisfied: isSatisfied,
             usesWired: usesWiredEthernet,
             usesWiFi: usesWiFi
@@ -73,14 +73,14 @@ struct StatusTrioNetworkPathSnapshot: Equatable, Sendable {
     }
 }
 
-enum StatusTrioNetworkConnectionResolver {
+enum DuoStatusProNetworkConnectionResolver {
     /// Wired wins over Wi-Fi when both are active so the icon reflects the
     /// interface the system prefers; anything else satisfied is `other`.
     static func resolve(
         satisfied: Bool,
         usesWired: Bool,
         usesWiFi: Bool
-    ) -> StatusTrioNetworkConnection {
+    ) -> DuoStatusProNetworkConnection {
         guard satisfied else { return .offline }
         if usesWired { return .ethernet }
         if usesWiFi { return .wifi }
@@ -92,22 +92,22 @@ enum StatusTrioNetworkConnectionResolver {
 
 /// Synchronous system reads. Implementations must be safe to call from a
 /// background queue; the monitor never calls them on the main actor.
-protocol StatusTrioSystemReading: Sendable {
-    func readBattery() -> StatusTrioBatteryStatus
-    func readWiFi(path: StatusTrioNetworkPathSnapshot?) -> StatusTrioWiFiStatus
-    func readVolume() -> StatusTrioVolumeStatus
+protocol DuoStatusProSystemReading: Sendable {
+    func readBattery() -> DuoStatusProBatteryStatus
+    func readWiFi(path: DuoStatusProNetworkPathSnapshot?) -> DuoStatusProWiFiStatus
+    func readVolume() -> DuoStatusProVolumeStatus
 }
 
-struct StatusTrioSystemReader: StatusTrioSystemReading {
+struct DuoStatusProSystemReader: DuoStatusProSystemReading {
     init() {}
 
     // MARK: Battery
 
-    func readBattery() -> StatusTrioBatteryStatus {
+    func readBattery() -> DuoStatusProBatteryStatus {
         let isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
         guard let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
               let sources = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef] else {
-            return StatusTrioBatteryStatus(isLowPowerMode: isLowPowerMode)
+            return DuoStatusProBatteryStatus(isLowPowerMode: isLowPowerMode)
         }
         let descriptions = sources.compactMap {
             IOPSGetPowerSourceDescription(info, $0)?.takeUnretainedValue() as? [String: Any]
@@ -121,11 +121,11 @@ struct StatusTrioSystemReader: StatusTrioSystemReading {
     static func battery(
         from descriptions: [[String: Any]],
         isLowPowerMode: Bool
-    ) -> StatusTrioBatteryStatus {
+    ) -> DuoStatusProBatteryStatus {
         guard let battery = descriptions.first(where: {
             $0[kIOPSTypeKey] as? String == kIOPSInternalBatteryType
         }), battery[kIOPSIsPresentKey] as? Bool != false else {
-            return StatusTrioBatteryStatus(isLowPowerMode: isLowPowerMode)
+            return DuoStatusProBatteryStatus(isLowPowerMode: isLowPowerMode)
         }
 
         let percentage: Int?
@@ -140,7 +140,7 @@ struct StatusTrioSystemReader: StatusTrioSystemReading {
             percentage = nil
         }
 
-        return StatusTrioBatteryStatus(
+        return DuoStatusProBatteryStatus(
             rawPercentage: percentage,
             isPresent: true,
             isCharging: battery[kIOPSIsChargingKey] as? Bool ?? false,
@@ -157,7 +157,7 @@ struct StatusTrioSystemReader: StatusTrioSystemReading {
 
     // MARK: Wi-Fi
 
-    func readWiFi(path: StatusTrioNetworkPathSnapshot?) -> StatusTrioWiFiStatus {
+    func readWiFi(path: DuoStatusProNetworkPathSnapshot?) -> DuoStatusProWiFiStatus {
         guard let interface = CWWiFiClient.shared().interface() else {
             return .unknown
         }
@@ -168,7 +168,7 @@ struct StatusTrioSystemReader: StatusTrioSystemReading {
         let sharingActive = powerOn && serviceActive
             && Self.isInternetSharingActive() == true
 
-        let state = StatusTrioWiFiClassifier.classify(
+        let state = DuoStatusProWiFiClassifier.classify(
             powerOn: powerOn,
             serviceActive: serviceActive,
             isIBSS: interface.interfaceMode() == .IBSS,
@@ -177,7 +177,7 @@ struct StatusTrioSystemReader: StatusTrioSystemReading {
             usesWiFi: path?.usesWiFi ?? false,
             isExpensive: path?.isExpensive ?? false
         )
-        return StatusTrioWiFiStatus(state: state, rssi: Self.normalizedRSSI(interface.rssiValue()))
+        return DuoStatusProWiFiStatus(state: state, rssi: Self.normalizedRSSI(interface.rssiValue()))
     }
 
     /// CoreWLAN reports zero when no reading is available; only negative dBm is real.
@@ -189,7 +189,7 @@ struct StatusTrioSystemReader: StatusTrioSystemReading {
     /// best-effort signal. Missing or unreadable data returns `nil`, which means
     /// "not definitively sharing" and never assumes sharing is active.
     static func isInternetSharingActive() -> Bool? {
-        guard let store = SCDynamicStoreCreate(nil, "MacTools.StatusTrio" as CFString, nil, nil),
+        guard let store = SCDynamicStoreCreate(nil, "MacTools.DuoStatusPro" as CFString, nil, nil),
               let value = SCDynamicStoreCopyValue(store, "com.apple.nat" as CFString) as? [String: Any],
               let nat = value["NAT"] as? [String: Any] else {
             return nil
@@ -205,33 +205,33 @@ struct StatusTrioSystemReader: StatusTrioSystemReading {
 
     // MARK: Volume
 
-    func readVolume() -> StatusTrioVolumeStatus {
-        guard let deviceID = StatusTrioCoreAudio.validDefaultOutputDevice() else {
+    func readVolume() -> DuoStatusProVolumeStatus {
+        guard let deviceID = DuoStatusProCoreAudio.validDefaultOutputDevice() else {
             return .unknown
         }
-        let scalars = StatusTrioCoreAudio.outputElements.compactMap { element in
-            StatusTrioCoreAudio.readFloat32(
+        let scalars = DuoStatusProCoreAudio.outputElements.compactMap { element in
+            DuoStatusProCoreAudio.readFloat32(
                 objectID: deviceID,
                 selector: kAudioDevicePropertyVolumeScalar,
                 scope: kAudioObjectPropertyScopeOutput,
                 element: element
             )
         }
-        let mutes = StatusTrioCoreAudio.outputElements.compactMap { element in
-            StatusTrioCoreAudio.readUInt32(
+        let mutes = DuoStatusProCoreAudio.outputElements.compactMap { element in
+            DuoStatusProCoreAudio.readUInt32(
                 objectID: deviceID,
                 selector: kAudioDevicePropertyMute,
                 scope: kAudioObjectPropertyScopeOutput,
                 element: element
             )
         }
-        let transport = StatusTrioCoreAudio.readUInt32(
+        let transport = DuoStatusProCoreAudio.readUInt32(
             objectID: deviceID,
             selector: kAudioDevicePropertyTransportType,
             scope: kAudioObjectPropertyScopeGlobal,
             element: kAudioObjectPropertyElementMain
         )
-        return StatusTrioVolumeStatus(
+        return DuoStatusProVolumeStatus(
             scalar: Self.averageScalar(scalars),
             isMuted: mutes.first == 1,
             isBluetoothOutput: Self.isBluetoothTransport(transport)
@@ -256,7 +256,7 @@ struct StatusTrioSystemReader: StatusTrioSystemReading {
 
 /// Thin wrappers over `AudioObjectGetPropertyData` that turn every failure into
 /// `nil`. Shared by the volume reader and the CoreAudio event monitor.
-enum StatusTrioCoreAudio {
+enum DuoStatusProCoreAudio {
     /// Main element first, then the left and right channels for devices without
     /// a master control.
     static let outputElements: [AudioObjectPropertyElement] = [

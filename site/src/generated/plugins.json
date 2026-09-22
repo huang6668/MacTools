@@ -8993,6 +8993,230 @@
     },
     {
       "capabilities": {
+        "panelItems": [],
+        "settings": "form"
+      },
+      "category": "monitoring",
+      "displayName": "Duo Status Pro",
+      "id": "duo-status-pro",
+      "localizedMetadata": {
+        "ar": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi والبطارية ومستوى الصوت في أيقونة واحدة في شريط القوائم."
+        },
+        "de": {
+          "displayName": "Duo Status Pro",
+          "summary": "WLAN, Batterie und Lautstärke in einem Menüleistensymbol."
+        },
+        "en": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi, battery, and volume combined into one menu bar icon."
+        },
+        "es": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi, batería y volumen en un solo icono de la barra de menús."
+        },
+        "fr": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi, batterie et volume réunis dans une seule icône de la barre des menus."
+        },
+        "ja": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi、バッテリー、音量をひとつのメニューバーアイコンに"
+        },
+        "ko": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi, 배터리, 음량을 하나의 메뉴 막대 아이콘으로"
+        },
+        "pt": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi, bateria e volume num único ícone da barra de menus."
+        },
+        "ru": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi, батарея и громкость в одном значке строки меню."
+        },
+        "zh-Hans": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi、电量与音量合一的菜单栏图标"
+        },
+        "zh-Hant": {
+          "displayName": "Duo Status Pro",
+          "summary": "Wi-Fi、電量與音量合一的選單列圖示"
+        }
+      },
+      "openInMacToolsURL": "mactools://app/settings/plugins/marketplace/duo-status-pro",
+      "product": {
+        "actions": null,
+        "discovery": {
+          "alternativePluginIDs": [
+            "duo-status"
+          ],
+          "goalCategories": [
+            "monitoring"
+          ],
+          "keywords": [
+            "trio",
+            "battery",
+            "wifi",
+            "volume",
+            "network",
+            "menu bar",
+            "status"
+          ],
+          "localizedSynonyms": {
+            "ar": [
+              "ثلاثي الحالة"
+            ],
+            "de": [
+              "Status-Trio"
+            ],
+            "en": [
+              "Duo Status Pro"
+            ],
+            "es": [
+              "Trío de estado"
+            ],
+            "fr": [
+              "Trio d’état"
+            ],
+            "ja": [
+              "ステータストリオ"
+            ],
+            "ko": [
+              "상태 트리오"
+            ],
+            "pt": [
+              "Trio de estado"
+            ],
+            "ru": [
+              "Статус-трио"
+            ],
+            "zh-Hans": [
+              "三合一状态"
+            ],
+            "zh-Hant": [
+              "三合一狀態"
+            ]
+          },
+          "relatedPluginIDs": [
+            "duo-status",
+            "device-battery",
+            "activity-bar"
+          ],
+          "useCases": [
+            {
+              "id": "primary-use",
+              "title": {
+                "ar": "Duo Status Pro",
+                "de": "Duo Status Pro",
+                "en": "Duo Status Pro",
+                "es": "Duo Status Pro",
+                "fr": "Duo Status Pro",
+                "ja": "Duo Status Pro",
+                "ko": "Duo Status Pro",
+                "pt": "Duo Status Pro",
+                "ru": "Duo Status Pro",
+                "zh-Hans": "Duo Status Pro",
+                "zh-Hant": "Duo Status Pro"
+              }
+            }
+          ]
+        },
+        "presentation": {
+          "documentationURL": "https://github.com/ggbond268/MacTools/blob/main/docs/plugins/duo-status-pro.md",
+          "examples": [
+            {
+              "id": "primary-use",
+              "text": {
+                "ar": "Wi-Fi والبطارية ومستوى الصوت في أيقونة واحدة في شريط القوائم.",
+                "de": "WLAN, Batterie und Lautstärke in einem Menüleistensymbol.",
+                "en": "Wi-Fi, battery, and volume combined into one menu bar icon.",
+                "es": "Wi-Fi, batería y volumen en un solo icono de la barra de menús.",
+                "fr": "Wi-Fi, batterie et volume réunis dans une seule icône de la barre des menus.",
+                "ja": "Wi-Fi、バッテリー、音量をひとつのメニューバーアイコンに",
+                "ko": "Wi-Fi, 배터리, 음량을 하나의 메뉴 막대 아이콘으로",
+                "pt": "Wi-Fi, bateria e volume num único ícone da barra de menus.",
+                "ru": "Wi-Fi, батарея и громкость в одном значке строки меню.",
+                "zh-Hans": "Wi-Fi、电量与音量合一的菜单栏图标",
+                "zh-Hant": "Wi-Fi、電量與音量合一的選單列圖示"
+              }
+            }
+          ],
+          "license": "GPL-3.0-only",
+          "longDescription": {
+            "ar": "Wi-Fi والبطارية ومستوى الصوت في أيقونة واحدة في شريط القوائم.",
+            "de": "WLAN, Batterie und Lautstärke in einem Menüleistensymbol.",
+            "en": "Wi-Fi, battery, and volume combined into one menu bar icon.",
+            "es": "Wi-Fi, batería y volumen en un solo icono de la barra de menús.",
+            "fr": "Wi-Fi, batterie et volume réunis dans une seule icône de la barre des menus.",
+            "ja": "Wi-Fi、バッテリー、音量をひとつのメニューバーアイコンに",
+            "ko": "Wi-Fi, 배터리, 음량을 하나의 메뉴 막대 아이콘으로",
+            "pt": "Wi-Fi, bateria e volume num único ícone da barra de menus.",
+            "ru": "Wi-Fi, батарея и громкость в одном значке строки меню.",
+            "zh-Hans": "Wi-Fi、电量与音量合一的菜单栏图标",
+            "zh-Hant": "Wi-Fi、電量與音量合一的選單列圖示"
+          },
+          "publisher": "MacTools",
+          "screenshots": [],
+          "supportURL": "https://github.com/ggbond268/MacTools/issues"
+        },
+        "privacy": {
+          "allowsUserConfiguredDomains": false,
+          "dataObserved": [
+            "battery-state",
+            "wifi-signal",
+            "network-connection-state",
+            "output-volume"
+          ],
+          "dataPersisted": [
+            "plugin-configuration"
+          ],
+          "diagnosticExportsContainUserData": false,
+          "networkDomains": [],
+          "networkUse": "none",
+          "processesSensitiveUserContent": false,
+          "retention": {
+            "policy": "user-controlled"
+          },
+          "telemetry": "none"
+        },
+        "relationships": {
+          "includedPackIDs": [],
+          "relatedPluginIDs": [
+            "duo-status",
+            "device-battery",
+            "activity-bar"
+          ],
+          "suggestedRecipeIDs": [],
+          "supersedesPluginIDs": []
+        },
+        "requirements": {
+          "applications": [],
+          "architectures": [
+            "arm64",
+            "x86_64"
+          ],
+          "executables": [],
+          "hardware": [],
+          "minimumMacOSVersion": "14.0",
+          "permissionIDs": [],
+          "requiresRelaunch": false,
+          "setupComplexity": "none"
+        },
+        "setup": {
+          "optionalSurfaces": [],
+          "steps": []
+        }
+      },
+      "releaseChannel": null,
+      "releaseNotesURL": null,
+      "route": "/plugins/duo-status-pro/",
+      "summary": "Wi-Fi、电量与音量合一的菜单栏图标",
+      "version": "1.0.0"
+    },
+    {
+      "capabilities": {
         "panelItems": [
           "row",
           "widget"
@@ -17900,230 +18124,6 @@
       "route": "/plugins/stage-manager/",
       "summary": "开启台前调度，集中显示当前窗口并把其他窗口收纳到侧边",
       "version": "2.0.0"
-    },
-    {
-      "capabilities": {
-        "panelItems": [],
-        "settings": "form"
-      },
-      "category": "monitoring",
-      "displayName": "Status Trio",
-      "id": "status-trio",
-      "localizedMetadata": {
-        "ar": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi والبطارية ومستوى الصوت في أيقونة واحدة في شريط القوائم."
-        },
-        "de": {
-          "displayName": "Status Trio",
-          "summary": "WLAN, Batterie und Lautstärke in einem Menüleistensymbol."
-        },
-        "en": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi, battery, and volume combined into one menu bar icon."
-        },
-        "es": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi, batería y volumen en un solo icono de la barra de menús."
-        },
-        "fr": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi, batterie et volume réunis dans une seule icône de la barre des menus."
-        },
-        "ja": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi、バッテリー、音量をひとつのメニューバーアイコンに"
-        },
-        "ko": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi, 배터리, 음량을 하나의 메뉴 막대 아이콘으로"
-        },
-        "pt": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi, bateria e volume num único ícone da barra de menus."
-        },
-        "ru": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi, батарея и громкость в одном значке строки меню."
-        },
-        "zh-Hans": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi、电量与音量合一的菜单栏图标"
-        },
-        "zh-Hant": {
-          "displayName": "Status Trio",
-          "summary": "Wi-Fi、電量與音量合一的選單列圖示"
-        }
-      },
-      "openInMacToolsURL": "mactools://app/settings/plugins/marketplace/status-trio",
-      "product": {
-        "actions": null,
-        "discovery": {
-          "alternativePluginIDs": [
-            "duo-status"
-          ],
-          "goalCategories": [
-            "monitoring"
-          ],
-          "keywords": [
-            "trio",
-            "battery",
-            "wifi",
-            "volume",
-            "network",
-            "menu bar",
-            "status"
-          ],
-          "localizedSynonyms": {
-            "ar": [
-              "ثلاثي الحالة"
-            ],
-            "de": [
-              "Status-Trio"
-            ],
-            "en": [
-              "Status Trio"
-            ],
-            "es": [
-              "Trío de estado"
-            ],
-            "fr": [
-              "Trio d’état"
-            ],
-            "ja": [
-              "ステータストリオ"
-            ],
-            "ko": [
-              "상태 트리오"
-            ],
-            "pt": [
-              "Trio de estado"
-            ],
-            "ru": [
-              "Статус-трио"
-            ],
-            "zh-Hans": [
-              "三合一状态"
-            ],
-            "zh-Hant": [
-              "三合一狀態"
-            ]
-          },
-          "relatedPluginIDs": [
-            "duo-status",
-            "device-battery",
-            "activity-bar"
-          ],
-          "useCases": [
-            {
-              "id": "primary-use",
-              "title": {
-                "ar": "Status Trio",
-                "de": "Status Trio",
-                "en": "Status Trio",
-                "es": "Status Trio",
-                "fr": "Status Trio",
-                "ja": "Status Trio",
-                "ko": "Status Trio",
-                "pt": "Status Trio",
-                "ru": "Status Trio",
-                "zh-Hans": "Status Trio",
-                "zh-Hant": "Status Trio"
-              }
-            }
-          ]
-        },
-        "presentation": {
-          "documentationURL": "https://github.com/ggbond268/MacTools/blob/main/docs/plugins/status-trio.md",
-          "examples": [
-            {
-              "id": "primary-use",
-              "text": {
-                "ar": "Wi-Fi والبطارية ومستوى الصوت في أيقونة واحدة في شريط القوائم.",
-                "de": "WLAN, Batterie und Lautstärke in einem Menüleistensymbol.",
-                "en": "Wi-Fi, battery, and volume combined into one menu bar icon.",
-                "es": "Wi-Fi, batería y volumen en un solo icono de la barra de menús.",
-                "fr": "Wi-Fi, batterie et volume réunis dans une seule icône de la barre des menus.",
-                "ja": "Wi-Fi、バッテリー、音量をひとつのメニューバーアイコンに",
-                "ko": "Wi-Fi, 배터리, 음량을 하나의 메뉴 막대 아이콘으로",
-                "pt": "Wi-Fi, bateria e volume num único ícone da barra de menus.",
-                "ru": "Wi-Fi, батарея и громкость в одном значке строки меню.",
-                "zh-Hans": "Wi-Fi、电量与音量合一的菜单栏图标",
-                "zh-Hant": "Wi-Fi、電量與音量合一的選單列圖示"
-              }
-            }
-          ],
-          "license": "GPL-3.0-only",
-          "longDescription": {
-            "ar": "Wi-Fi والبطارية ومستوى الصوت في أيقونة واحدة في شريط القوائم.",
-            "de": "WLAN, Batterie und Lautstärke in einem Menüleistensymbol.",
-            "en": "Wi-Fi, battery, and volume combined into one menu bar icon.",
-            "es": "Wi-Fi, batería y volumen en un solo icono de la barra de menús.",
-            "fr": "Wi-Fi, batterie et volume réunis dans une seule icône de la barre des menus.",
-            "ja": "Wi-Fi、バッテリー、音量をひとつのメニューバーアイコンに",
-            "ko": "Wi-Fi, 배터리, 음량을 하나의 메뉴 막대 아이콘으로",
-            "pt": "Wi-Fi, bateria e volume num único ícone da barra de menus.",
-            "ru": "Wi-Fi, батарея и громкость в одном значке строки меню.",
-            "zh-Hans": "Wi-Fi、电量与音量合一的菜单栏图标",
-            "zh-Hant": "Wi-Fi、電量與音量合一的選單列圖示"
-          },
-          "publisher": "MacTools",
-          "screenshots": [],
-          "supportURL": "https://github.com/ggbond268/MacTools/issues"
-        },
-        "privacy": {
-          "allowsUserConfiguredDomains": false,
-          "dataObserved": [
-            "battery-state",
-            "wifi-signal",
-            "network-connection-state",
-            "output-volume"
-          ],
-          "dataPersisted": [
-            "plugin-configuration"
-          ],
-          "diagnosticExportsContainUserData": false,
-          "networkDomains": [],
-          "networkUse": "none",
-          "processesSensitiveUserContent": false,
-          "retention": {
-            "policy": "user-controlled"
-          },
-          "telemetry": "none"
-        },
-        "relationships": {
-          "includedPackIDs": [],
-          "relatedPluginIDs": [
-            "duo-status",
-            "device-battery",
-            "activity-bar"
-          ],
-          "suggestedRecipeIDs": [],
-          "supersedesPluginIDs": []
-        },
-        "requirements": {
-          "applications": [],
-          "architectures": [
-            "arm64",
-            "x86_64"
-          ],
-          "executables": [],
-          "hardware": [],
-          "minimumMacOSVersion": "14.0",
-          "permissionIDs": [],
-          "requiresRelaunch": false,
-          "setupComplexity": "none"
-        },
-        "setup": {
-          "optionalSurfaces": [],
-          "steps": []
-        }
-      },
-      "releaseChannel": null,
-      "releaseNotesURL": null,
-      "route": "/plugins/status-trio/",
-      "summary": "Wi-Fi、电量与音量合一的菜单栏图标",
-      "version": "1.0.0"
     },
     {
       "capabilities": {

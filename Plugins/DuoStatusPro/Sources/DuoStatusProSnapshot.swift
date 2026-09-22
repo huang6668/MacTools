@@ -4,7 +4,7 @@ import Foundation
 // Only the menu-bar icon inputs are carried over; popover, Dock, and Bluetooth
 // panel state are intentionally absent.
 
-struct StatusTrioBatteryStatus: Equatable, Sendable {
+struct DuoStatusProBatteryStatus: Equatable, Sendable {
     /// Nil when IOKit reports no usable capacity.
     var rawPercentage: Int?
     /// False on desktop Macs without an internal battery.
@@ -33,10 +33,10 @@ struct StatusTrioBatteryStatus: Equatable, Sendable {
         return min(100, max(0, rawPercentage ?? 100))
     }
 
-    static let unknown = StatusTrioBatteryStatus()
+    static let unknown = DuoStatusProBatteryStatus()
 }
 
-enum StatusTrioWiFiState: Equatable, Sendable {
+enum DuoStatusProWiFiState: Equatable, Sendable {
     case connected
     case notAssociated
     case off
@@ -47,20 +47,20 @@ enum StatusTrioWiFiState: Equatable, Sendable {
     case unavailable
 }
 
-struct StatusTrioWiFiStatus: Equatable, Sendable {
-    var state: StatusTrioWiFiState
+struct DuoStatusProWiFiStatus: Equatable, Sendable {
+    var state: DuoStatusProWiFiState
     /// Negative dBm while associated; nil when CoreWLAN reports no reading.
     var rssi: Int?
 
-    init(state: StatusTrioWiFiState = .unavailable, rssi: Int? = nil) {
+    init(state: DuoStatusProWiFiState = .unavailable, rssi: Int? = nil) {
         self.state = state
         self.rssi = rssi
     }
 
-    static let unknown = StatusTrioWiFiStatus()
+    static let unknown = DuoStatusProWiFiStatus()
 }
 
-enum StatusTrioNetworkConnection: Equatable, Sendable {
+enum DuoStatusProNetworkConnection: Equatable, Sendable {
     case wifi
     case ethernet
     case other
@@ -68,7 +68,7 @@ enum StatusTrioNetworkConnection: Equatable, Sendable {
     case unknown
 }
 
-struct StatusTrioVolumeStatus: Equatable, Sendable {
+struct DuoStatusProVolumeStatus: Equatable, Sendable {
     /// 0...1 for the default output device; nil when no output device exists.
     var scalar: Double?
     var isMuted: Bool
@@ -81,14 +81,14 @@ struct StatusTrioVolumeStatus: Equatable, Sendable {
         self.isBluetoothOutput = isBluetoothOutput
     }
 
-    static let unknown = StatusTrioVolumeStatus()
+    static let unknown = DuoStatusProVolumeStatus()
 }
 
-struct StatusTrioSnapshot: Equatable, Sendable {
-    var battery: StatusTrioBatteryStatus = .unknown
-    var wifi: StatusTrioWiFiStatus = .unknown
-    var connection: StatusTrioNetworkConnection = .unknown
-    var volume: StatusTrioVolumeStatus = .unknown
+struct DuoStatusProSnapshot: Equatable, Sendable {
+    var battery: DuoStatusProBatteryStatus = .unknown
+    var wifi: DuoStatusProWiFiStatus = .unknown
+    var connection: DuoStatusProNetworkConnection = .unknown
+    var volume: DuoStatusProVolumeStatus = .unknown
 
-    static let unknown = StatusTrioSnapshot()
+    static let unknown = DuoStatusProSnapshot()
 }

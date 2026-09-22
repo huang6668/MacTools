@@ -7,18 +7,33 @@ import OSLog
 // ControlCenter restarts, which causes a brief visual refresh of the menu bar.
 // The controller records each icon's pre-hide state and restores it on demand.
 
+enum DuoStatusProSystemIcon: String, CaseIterable, Sendable {
+    case battery = "Battery"
+    case wifi = "WiFi"
+
+    var preferenceKey: String { "NSStatusItem Visible \(rawValue)" }
+}
+
+/// The side effects the controller needs, behind a seam so tests can observe the
+/// visibility bookkeeping without touching real preferences or killing processes.
+@MainActor
+protocol DuoStatusProSystemIconBackend {
+    func isVisible(_ icon: DuoStatusProSystemIcon) -> Bool
+    func setVisible(_ icon: DuoStatusProSystemIcon, _ visible: Bool)
+    func restartControlCenter()
+}
+
 @MainActor
 final class DuoStatusProSystemIconController {
-    enum SystemIcon: String, CaseIterable {
-        case battery = "Battery"
-        case wifi = "WiFi"
+    typealias SystemIcon = DuoStatusProSystemIcon
 
-        var preferenceKey: String { "NSStatusItem Visible \(rawValue)" }
-    }
-
-    private static let appID = "com.apple.controlcenter" as CFString
+    private let backend: any DuoStatusProSystemIconBackend
     private var originalVisibility: [SystemIcon: Bool] = [:]
     private var pendingRestartTask: Task<Void, Never>?
+
+    init(backend: (any DuoStatusProSystemIconBackend)? = nil) {
+        self.backend = backend ?? DuoStatusProControlCenterBackend()
+    }
 
     /// Applies the desired hide state for each icon. Restarts ControlCenter once
     /// if any visibility changed. The restart is debounced by one run-loop cycle
@@ -74,19 +89,11 @@ final class DuoStatusProSystemIconController {
     // MARK: - Private
 
     private func readVisibility(_ icon: SystemIcon) -> Bool {
-        let value = CFPreferencesCopyAppValue(icon.preferenceKey as CFString, Self.appID)
-        if let bool = value as? Bool { return bool }
-        if let num = value as? NSNumber { return num.boolValue }
-        return true // absent key means visible (the default)
+        backend.isVisible(icon)
     }
 
     private func setVisibility(_ icon: SystemIcon, visible: Bool) {
-        CFPreferencesSetAppValue(
-            icon.preferenceKey as CFString,
-            (visible ? 1 : 0) as CFTypeRef,
-            Self.appID
-        )
-        CFPreferencesAppSynchronize(Self.appID)
+        backend.setVisible(icon, visible)
     }
 
     private func scheduleRestart() {
@@ -100,13 +107,47 @@ final class DuoStatusProSystemIconController {
     }
 
     private func restartControlCenter() {
+        backend.restartControlCenter()
+    }
+}
+
+/// The real backend: `com.apple.controlcenter` preferences plus a ControlCenter
+/// restart so the menu bar picks the change up.
+@MainActor
+private struct DuoStatusProControlCenterBackend: DuoStatusProSystemIconBackend {
+    private static let appID = "com.apple.controlcenter" as CFString
+    private static let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "cc.ggbond.mactools",
+        category: "DuoStatusProSystemIconController"
+    )
+
+    func isVisible(_ icon: DuoStatusProSystemIcon) -> Bool {
+        let value = CFPreferencesCopyAppValue(icon.preferenceKey as CFString, Self.appID)
+        if let bool = value as? Bool { return bool }
+        if let number = value as? NSNumber { return number.boolValue }
+        // An absent key means the system default, which is visible.
+        return true
+    }
+
+    func setVisible(_ icon: DuoStatusProSystemIcon, _ visible: Bool) {
+        CFPreferencesSetAppValue(
+            icon.preferenceKey as CFString,
+            visible ? kCFBooleanTrue : kCFBooleanFalse,
+            Self.appID
+        )
+        CFPreferencesAppSynchronize(Self.appID)
+    }
+
+    func restartControlCenter() {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
         task.arguments = ["ControlCenter"]
         do {
             try task.run()
         } catch {
-            AppLog.plugin.error("[DuoStatusPro] Failed to restart ControlCenter: \(error)")
+            Self.logger.error(
+                "Failed to restart ControlCenter: \(error.localizedDescription, privacy: .public)"
+            )
         }
     }
 }

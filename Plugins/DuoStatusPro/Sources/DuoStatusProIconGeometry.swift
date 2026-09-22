@@ -6,7 +6,7 @@ import Foundation
 /// Vector paths for the menu-bar glyph, expressed on a 120 x 120 canvas whose
 /// origin is the top-left corner (y grows downward). The renderer scales and
 /// flips the canvas into the requested point size.
-enum StatusTrioIconGeometry {
+enum DuoStatusProIconGeometry {
     static let canvas = CGRect(x: 0, y: 0, width: 120, height: 120)
 
     // Derived from the SVG battery endpoints and radius.

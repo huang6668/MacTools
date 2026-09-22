@@ -1,10 +1,10 @@
 import MacToolsPluginKit
 
 /// Tooltip and accessibility text for the combined icon, one line per subsystem.
-struct StatusTrioStatusDescription {
+struct DuoStatusProStatusDescription {
     let localization: PluginLocalization
 
-    func text(for snapshot: StatusTrioSnapshot) -> String {
+    func text(for snapshot: DuoStatusProSnapshot) -> String {
         [
             batteryText(snapshot.battery),
             wifiText(snapshot.wifi),
@@ -13,7 +13,7 @@ struct StatusTrioStatusDescription {
         ].joined(separator: "\n")
     }
 
-    private func batteryText(_ battery: StatusTrioBatteryStatus) -> String {
+    private func batteryText(_ battery: DuoStatusProBatteryStatus) -> String {
         guard battery.isPresent else {
             return localization.string("status.noBattery", defaultValue: "无内置电池")
         }
@@ -42,7 +42,7 @@ struct StatusTrioStatusDescription {
         )
     }
 
-    private func wifiText(_ wifi: StatusTrioWiFiStatus) -> String {
+    private func wifiText(_ wifi: DuoStatusProWiFiStatus) -> String {
         switch wifi.state {
         case .connected:
             let strength = signalStrengthText(rssi: wifi.rssi)
@@ -78,7 +78,7 @@ struct StatusTrioStatusDescription {
         return localization.string("status.signalWeak", defaultValue: "弱")
     }
 
-    private func connectionText(_ connection: StatusTrioNetworkConnection) -> String {
+    private func connectionText(_ connection: DuoStatusProNetworkConnection) -> String {
         switch connection {
         case .wifi:
             localization.string("status.connectionWiFi", defaultValue: "网络 Wi-Fi")
@@ -93,7 +93,7 @@ struct StatusTrioStatusDescription {
         }
     }
 
-    private func volumeText(_ volume: StatusTrioVolumeStatus) -> String {
+    private func volumeText(_ volume: DuoStatusProVolumeStatus) -> String {
         guard let scalar = volume.scalar, scalar.isFinite else {
             return localization.string("status.volumeUnavailable", defaultValue: "音量暂不可用")
         }

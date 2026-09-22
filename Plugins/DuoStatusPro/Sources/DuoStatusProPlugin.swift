@@ -2,26 +2,26 @@ import Combine
 import MacToolsPluginKit
 import SwiftUI
 
-public final class StatusTrioPluginFactory: NSObject, MacToolsPluginBundleFactory {
+public final class DuoStatusProPluginFactory: NSObject, MacToolsPluginBundleFactory {
     public static func makeProvider(context: PluginRuntimeContext) throws -> any PluginProvider {
-        StatusTrioPluginProvider(context: context)
+        DuoStatusProPluginProvider(context: context)
     }
 }
 
 @MainActor
-private struct StatusTrioPluginProvider: PluginProvider {
+private struct DuoStatusProPluginProvider: PluginProvider {
     let context: PluginRuntimeContext
 
     func makePlugins() -> [any MacToolsPlugin] {
-        [StatusTrioPlugin(context: context)]
+        [DuoStatusProPlugin(context: context)]
     }
 }
 
 @MainActor
-final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
+final class DuoStatusProPlugin: MacToolsPlugin, PluginSettingsPresenting,
     PluginApplicationActivityStateHandling, PluginMenuBarIconProviding,
     PluginMenuBarIconHostContextConsuming {
-    static let pluginID = "status-trio"
+    static let pluginID = "duo-status-pro"
     static let iconID = "status"
 
     enum SettingsID {
@@ -45,6 +45,8 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
         static let bluetoothGlyphReplacesNetworkIcon = "bluetooth-glyph-replaces-network-icon"
         static let bluetoothGlyphPrioritizesNetworkErrors = "bluetooth-glyph-prioritizes-network-errors"
         static let ringStrokeStyle = "ring-stroke-style"
+        static let hidesSystemBattery = "hides-system-battery"
+        static let hidesSystemWiFi = "hides-system-wifi"
     }
 
     var onStateChange: (() -> Void)?
@@ -57,10 +59,11 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
         didSet { applyConfiguration() }
     }
     private let localization: PluginLocalization
-    private let monitor: any StatusTrioMonitoring
-    private let menuBar: any StatusTrioMenuBarPresenting
-    private let optionsStore: StatusTrioOptionsStore
-    private(set) var options: StatusTrioIconOptions
+    private let monitor: any DuoStatusProMonitoring
+    private let menuBar: any DuoStatusProMenuBarPresenting
+    private let optionsStore: DuoStatusProOptionsStore
+    private let systemIconController = DuoStatusProSystemIconController()
+    private(set) var options: DuoStatusProIconOptions
     private var localizationSubscription: AnyCancellable?
     private var isActive = false
     private var activityState: PluginApplicationActivityState = .interactive
@@ -74,14 +77,14 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
 
     init(
         context: PluginRuntimeContext,
-        monitor: (any StatusTrioMonitoring)? = nil,
-        menuBar: (any StatusTrioMenuBarPresenting)? = nil
+        monitor: (any DuoStatusProMonitoring)? = nil,
+        menuBar: (any DuoStatusProMenuBarPresenting)? = nil
     ) {
         localization = PluginLocalization(bundle: context.resourceBundle)
-        optionsStore = StatusTrioOptionsStore(storage: context.storage)
+        optionsStore = DuoStatusProOptionsStore(storage: context.storage)
         options = optionsStore.load()
-        self.monitor = monitor ?? StatusTrioSystemMonitor()
-        self.menuBar = menuBar ?? StatusTrioMenuBarController()
+        self.monitor = monitor ?? DuoStatusProSystemMonitor()
+        self.menuBar = menuBar ?? DuoStatusProMenuBarController()
         self.monitor.onChange = { [weak self] snapshot in
             guard let self, self.isActive, self.menuBarIconHostContext != nil,
                   self.activityState.allowsBackgroundWork else { return }
@@ -104,7 +107,7 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
     var metadata: PluginMetadata {
         PluginMetadata(
             id: Self.pluginID,
-            title: localization.string("metadata.title", defaultValue: "Status Trio"),
+            title: localization.string("metadata.title", defaultValue: "Duo Status Pro"),
             iconName: "circle.dotted.and.circle",
             iconTint: .blue,
             order: 25,
@@ -152,6 +155,24 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
                         ],
                         style: .segmented
                     )
+                ),
+                PluginSettingsRow(
+                    id: SettingsID.hidesSystemBattery,
+                    title: localization.string("settings.hidesSystemBattery", defaultValue: "隐藏系统电量图标"),
+                    description: localization.string(
+                        "settings.hidesSystemBatteryDescription",
+                        defaultValue: "隐藏 macOS 菜单栏中的系统电量图标，由本插件替代显示。"
+                    ),
+                    control: .toggle(isOn: options.hidesSystemBattery)
+                ),
+                PluginSettingsRow(
+                    id: SettingsID.hidesSystemWiFi,
+                    title: localization.string("settings.hidesSystemWiFi", defaultValue: "隐藏系统 Wi-Fi 图标"),
+                    description: localization.string(
+                        "settings.hidesSystemWiFiDescription",
+                        defaultValue: "隐藏 macOS 菜单栏中的系统 Wi-Fi 图标，由本插件替代显示。"
+                    ),
+                    control: .toggle(isOn: options.hidesSystemWiFi)
                 )
             ]
         )
@@ -204,9 +225,9 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
                     ),
                     control: .slider(
                         value: Double(options.batteryCriticalThreshold),
-                        range: Double(StatusTrioOptionsStore.criticalThresholdRange.lowerBound)
-                            ... Double(StatusTrioOptionsStore.criticalThresholdRange.upperBound),
-                        step: Double(StatusTrioOptionsStore.criticalThresholdStep),
+                        range: Double(DuoStatusProOptionsStore.criticalThresholdRange.lowerBound)
+                            ... Double(DuoStatusProOptionsStore.criticalThresholdRange.upperBound),
+                        step: Double(DuoStatusProOptionsStore.criticalThresholdStep),
                         valueFormat: .percentage
                     )
                 )
@@ -261,9 +282,9 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
                     control: .picker(
                         selectionID: options.volumeDisplayStyle.rawValue,
                         options: [
-                            .init(id: StatusTrioVolumeDisplayStyle.dots.rawValue,
+                            .init(id: DuoStatusProVolumeDisplayStyle.dots.rawValue,
                                   title: localization.string("settings.volumeDots", defaultValue: "圆点")),
-                            .init(id: StatusTrioVolumeDisplayStyle.arc.rawValue,
+                            .init(id: DuoStatusProVolumeDisplayStyle.arc.rawValue,
                                   title: localization.string("settings.volumeArc", defaultValue: "圆弧"))
                         ],
                         style: .segmented
@@ -302,11 +323,11 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
                     control: .picker(
                         selectionID: options.ringStrokeStyle.rawValue,
                         options: [
-                            .init(id: StatusTrioRingStrokeStyle.light.rawValue,
+                            .init(id: DuoStatusProRingStrokeStyle.light.rawValue,
                                   title: localization.string("settings.strokeLight", defaultValue: "细")),
-                            .init(id: StatusTrioRingStrokeStyle.regular.rawValue,
+                            .init(id: DuoStatusProRingStrokeStyle.regular.rawValue,
                                   title: localization.string("settings.strokeRegular", defaultValue: "标准")),
-                            .init(id: StatusTrioRingStrokeStyle.bold.rawValue,
+                            .init(id: DuoStatusProRingStrokeStyle.bold.rawValue,
                                   title: localization.string("settings.strokeBold", defaultValue: "粗"))
                         ],
                         style: .segmented
@@ -336,6 +357,9 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
         localizationSubscription = nil
         monitor.stop()
         menuBar.remove()
+        if reason.requiresStateCleanup {
+            systemIconController.restore()
+        }
     }
 
     func refresh() {
@@ -358,7 +382,7 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
         case let .setNumber(controlID, value, phase):
             guard phase == .committed, controlID == SettingsID.batteryCriticalThreshold else { return }
             var updated = options
-            updated.batteryCriticalThreshold = StatusTrioOptionsStore.clampedThreshold(Int(value.rounded()))
+            updated.batteryCriticalThreshold = DuoStatusProOptionsStore.clampedThreshold(Int(value.rounded()))
             commit(updated)
         case .setText, .invoke:
             return
@@ -371,12 +395,12 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
             guard let placement = PluginMenuBarIconPlacement(rawValue: optionID) else { return }
             requestPlacement(placement)
         case SettingsID.volumeDisplayStyle:
-            guard let style = StatusTrioVolumeDisplayStyle(rawValue: optionID) else { return }
+            guard let style = DuoStatusProVolumeDisplayStyle(rawValue: optionID) else { return }
             var updated = options
             updated.volumeDisplayStyle = style
             commit(updated)
         case SettingsID.ringStrokeStyle:
-            guard let style = StatusTrioRingStrokeStyle(rawValue: optionID) else { return }
+            guard let style = DuoStatusProRingStrokeStyle(rawValue: optionID) else { return }
             var updated = options
             updated.ringStrokeStyle = style
             commit(updated)
@@ -408,6 +432,10 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
             updated.bluetoothGlyphReplacesNetworkIcon = value
         case SettingsID.bluetoothGlyphPrioritizesNetworkErrors:
             updated.bluetoothGlyphPrioritizesNetworkErrors = value
+        case SettingsID.hidesSystemBattery:
+            updated.hidesSystemBattery = value
+        case SettingsID.hidesSystemWiFi:
+            updated.hidesSystemWiFi = value
         default:
             return
         }
@@ -428,7 +456,7 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
     }
 
     /// Applies and persists new options, then refreshes every icon surface.
-    private func commit(_ updated: StatusTrioIconOptions) {
+    private func commit(_ updated: DuoStatusProIconOptions) {
         guard updated != options else { return }
         options = updated
         optionsStore.save(updated)
@@ -449,7 +477,7 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
     ) -> PluginMenuBarIconSnapshot? {
         guard iconID == Self.iconID else { return nil }
         if let cachedIcon, cachedIcon.0 == context { return cachedIcon.1 }
-        let image = StatusTrioIconRenderer.image(
+        let image = DuoStatusProIconRenderer.image(
             for: monitor.snapshot,
             options: options,
             appearance: context.appearance == .dark ? .dark : .light,
@@ -498,8 +526,8 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
         }
     }
 
-    private func tooltip(for snapshot: StatusTrioSnapshot) -> String {
-        "\(metadata.title)\n\(StatusTrioStatusDescription(localization: localization).text(for: snapshot))"
+    private func tooltip(for snapshot: DuoStatusProSnapshot) -> String {
+        "\(metadata.title)\n\(DuoStatusProStatusDescription(localization: localization).text(for: snapshot))"
     }
 
     private func applyConfiguration() {
@@ -514,10 +542,14 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
         } else {
             monitor.stop()
         }
+        systemIconController.apply(
+            hideBattery: options.hidesSystemBattery,
+            hideWiFi: options.hidesSystemWiFi
+        )
         updateMenuBar(snapshot: monitor.snapshot)
     }
 
-    private func updateMenuBar(snapshot: StatusTrioSnapshot) {
+    private func updateMenuBar(snapshot: DuoStatusProSnapshot) {
         guard isActive, menuBarIconHostContext != nil else { return }
         guard placement == .standalone else {
             menuBar.remove()
@@ -526,7 +558,7 @@ final class StatusTrioPlugin: MacToolsPlugin, PluginSettingsPresenting,
         menuBar.update(snapshot: snapshot, options: options, tooltip: tooltip(for: snapshot))
     }
 
-    private func iconDidChange(snapshot: StatusTrioSnapshot) {
+    private func iconDidChange(snapshot: DuoStatusProSnapshot) {
         guard isActive else { return }
         iconRevision &+= 1
         cachedIcon = nil

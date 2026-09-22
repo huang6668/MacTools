@@ -1,3 +1,3 @@
-import StatusTrioPlugin
+import DuoStatusProPlugin
 
-private let statusTrioPluginFactoryAnchor: Any.Type = StatusTrioPluginFactory.self
+private let duoStatusProPluginFactoryAnchor: Any.Type = DuoStatusProPluginFactory.self

@@ -1,18 +1,18 @@
 import AppKit
 import Foundation
 import XCTest
-@testable import StatusTrioPlugin
+@testable import DuoStatusProPlugin
 
-final class StatusTrioSystemMonitorTests: XCTestCase {
+final class DuoStatusProSystemMonitorTests: XCTestCase {
     @MainActor
     func testStartReadsOffMainActorAndPublishesOnce() async {
-        let reader = StatusTrioFakeReader(
-            battery: StatusTrioBatteryStatus(rawPercentage: 64, isPresent: true),
-            wifi: StatusTrioWiFiStatus(state: .connected, rssi: -58),
-            volume: StatusTrioVolumeStatus(scalar: 0.5, isMuted: false, isBluetoothOutput: true)
+        let reader = DuoStatusProFakeReader(
+            battery: DuoStatusProBatteryStatus(rawPercentage: 64, isPresent: true),
+            wifi: DuoStatusProWiFiStatus(state: .connected, rssi: -58),
+            volume: DuoStatusProVolumeStatus(scalar: 0.5, isMuted: false, isBluetoothOutput: true)
         )
         let fixture = Fixture(reader: reader)
-        var published: [StatusTrioSnapshot] = []
+        var published: [DuoStatusProSnapshot] = []
         fixture.monitor.onChange = { published.append($0) }
 
         fixture.monitor.start()
@@ -22,7 +22,7 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
 
         await waitUntil { fixture.monitor.snapshot.battery.rawPercentage == 64 }
         XCTAssertEqual(published.count, 1)
-        XCTAssertEqual(fixture.monitor.snapshot.wifi, StatusTrioWiFiStatus(state: .connected, rssi: -58))
+        XCTAssertEqual(fixture.monitor.snapshot.wifi, DuoStatusProWiFiStatus(state: .connected, rssi: -58))
         XCTAssertEqual(fixture.monitor.snapshot.volume.scalar, 0.5)
         XCTAssertTrue(fixture.monitor.snapshot.volume.isBluetoothOutput)
         XCTAssertFalse(reader.ranOnMainThread)
@@ -36,14 +36,14 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
 
     @MainActor
     func testPathUpdatePublishesConnectionAndRereadsWiFi() async {
-        let reader = StatusTrioFakeReader(wifi: StatusTrioWiFiStatus(state: .connected, rssi: -60))
+        let reader = DuoStatusProFakeReader(wifi: DuoStatusProWiFiStatus(state: .connected, rssi: -60))
         let fixture = Fixture(reader: reader)
         fixture.monitor.start()
         await waitUntil { fixture.monitor.snapshot.wifi.state == .connected }
         let wifiReadsBeforePath = reader.wifiReadCount
 
-        let path = StatusTrioNetworkPathSnapshot(isSatisfied: true, usesWiFi: true, isExpensive: true)
-        reader.wifi = StatusTrioWiFiStatus(state: .hotspot, rssi: -60)
+        let path = DuoStatusProNetworkPathSnapshot(isSatisfied: true, usesWiFi: true, isExpensive: true)
+        reader.wifi = DuoStatusProWiFiStatus(state: .hotspot, rssi: -60)
         fixture.network.onChange?(path)
 
         await waitUntil { fixture.monitor.snapshot.connection == .wifi }
@@ -51,21 +51,21 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
         XCTAssertGreaterThan(reader.wifiReadCount, wifiReadsBeforePath)
         XCTAssertEqual(reader.lastWiFiPath, path)
 
-        fixture.network.onChange?(StatusTrioNetworkPathSnapshot(isSatisfied: false))
+        fixture.network.onChange?(DuoStatusProNetworkPathSnapshot(isSatisfied: false))
         await waitUntil { fixture.monitor.snapshot.connection == .offline }
         fixture.monitor.stop()
     }
 
     @MainActor
     func testAudioEventOnlyRereadsVolume() async {
-        let reader = StatusTrioFakeReader(volume: StatusTrioVolumeStatus(scalar: 0.2))
+        let reader = DuoStatusProFakeReader(volume: DuoStatusProVolumeStatus(scalar: 0.2))
         let fixture = Fixture(reader: reader)
         fixture.monitor.start()
         await waitUntil { fixture.monitor.snapshot.volume.scalar == 0.2 }
         let batteryReads = reader.batteryReadCount
         let wifiReads = reader.wifiReadCount
 
-        reader.volume = StatusTrioVolumeStatus(scalar: 0.9, isMuted: true)
+        reader.volume = DuoStatusProVolumeStatus(scalar: 0.9, isMuted: true)
         fixture.audio.onChange?()
 
         await waitUntil { fixture.monitor.snapshot.volume.isMuted }
@@ -79,9 +79,9 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
     func testStopRemovesSourcesAndIgnoresLateCallbacks() async throws {
         var context = CFRunLoopSourceContext()
         let source = try XCTUnwrap(CFRunLoopSourceCreate(nil, 0, &context))
-        let reader = StatusTrioFakeReader(battery: StatusTrioBatteryStatus(rawPercentage: 30, isPresent: true))
+        let reader = DuoStatusProFakeReader(battery: DuoStatusProBatteryStatus(rawPercentage: 30, isPresent: true))
         let fixture = Fixture(reader: reader, powerSource: source)
-        var published: [StatusTrioSnapshot] = []
+        var published: [DuoStatusProSnapshot] = []
         fixture.monitor.onChange = { published.append($0) }
 
         fixture.monitor.start()
@@ -100,7 +100,7 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
 
         let readsAfterStop = reader.readCount
         fixture.monitor.refresh()
-        oldNetworkCallback?(StatusTrioNetworkPathSnapshot(isSatisfied: true, usesWiredEthernet: true))
+        oldNetworkCallback?(DuoStatusProNetworkPathSnapshot(isSatisfied: true, usesWiredEthernet: true))
         oldAudioCallback?()
         fixture.workspaceCenter.post(name: NSWorkspace.didWakeNotification, object: nil)
         fixture.processInfoCenter.post(name: .NSProcessInfoPowerStateDidChange, object: nil)
@@ -114,7 +114,7 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
 
     @MainActor
     func testStopDiscardsInFlightReadingAndRestartReadsFresh() async {
-        let reader = StatusTrioBlockingReader()
+        let reader = DuoStatusProBlockingReader()
         let fixture = Fixture(reader: reader)
         var publishedLevels: [Int] = []
         fixture.monitor.onChange = { snapshot in
@@ -136,10 +136,10 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
 
     @MainActor
     func testDeinitStopsMonitors() async {
-        let network = StatusTrioNetworkPathMonitorFake()
-        let audio = StatusTrioAudioEventMonitorFake()
-        let reader = StatusTrioFakeReader(battery: StatusTrioBatteryStatus(rawPercentage: 55, isPresent: true))
-        var monitor: StatusTrioSystemMonitor? = StatusTrioSystemMonitor(
+        let network = DuoStatusProNetworkPathMonitorFake()
+        let audio = DuoStatusProAudioEventMonitorFake()
+        let reader = DuoStatusProFakeReader(battery: DuoStatusProBatteryStatus(rawPercentage: 55, isPresent: true))
+        var monitor: DuoStatusProSystemMonitor? = DuoStatusProSystemMonitor(
             reader: reader,
             networkMonitorFactory: { network },
             audioEventMonitorFactory: { audio },
@@ -162,22 +162,22 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
 
     @MainActor
     private struct Fixture {
-        let monitor: StatusTrioSystemMonitor
-        let network: StatusTrioNetworkPathMonitorFake
-        let audio: StatusTrioAudioEventMonitorFake
+        let monitor: DuoStatusProSystemMonitor
+        let network: DuoStatusProNetworkPathMonitorFake
+        let audio: DuoStatusProAudioEventMonitorFake
         let workspaceCenter: NotificationCenter
         let processInfoCenter: NotificationCenter
 
-        init(reader: any StatusTrioSystemReading, powerSource: CFRunLoopSource? = nil) {
-            let network = StatusTrioNetworkPathMonitorFake()
-            let audio = StatusTrioAudioEventMonitorFake()
+        init(reader: any DuoStatusProSystemReading, powerSource: CFRunLoopSource? = nil) {
+            let network = DuoStatusProNetworkPathMonitorFake()
+            let audio = DuoStatusProAudioEventMonitorFake()
             let workspaceCenter = NotificationCenter()
             let processInfoCenter = NotificationCenter()
             self.network = network
             self.audio = audio
             self.workspaceCenter = workspaceCenter
             self.processInfoCenter = processInfoCenter
-            monitor = StatusTrioSystemMonitor(
+            monitor = DuoStatusProSystemMonitor(
                 reader: reader,
                 networkMonitorFactory: { network },
                 audioEventMonitorFactory: { audio },
@@ -207,8 +207,8 @@ final class StatusTrioSystemMonitorTests: XCTestCase {
 // MARK: - Fakes
 
 @MainActor
-private final class StatusTrioNetworkPathMonitorFake: StatusTrioNetworkPathMonitoring {
-    var onChange: (@Sendable (StatusTrioNetworkPathSnapshot) -> Void)?
+private final class DuoStatusProNetworkPathMonitorFake: DuoStatusProNetworkPathMonitoring {
+    var onChange: (@Sendable (DuoStatusProNetworkPathSnapshot) -> Void)?
     private(set) var startCount = 0
     private(set) var cancelCount = 0
 
@@ -223,7 +223,7 @@ private final class StatusTrioNetworkPathMonitorFake: StatusTrioNetworkPathMonit
 }
 
 @MainActor
-private final class StatusTrioAudioEventMonitorFake: StatusTrioAudioEventMonitoring {
+private final class DuoStatusProAudioEventMonitorFake: DuoStatusProAudioEventMonitoring {
     private(set) var onChange: (@MainActor @Sendable () -> Void)?
     private(set) var startCount = 0
     private(set) var reconcileCount = 0
@@ -244,38 +244,38 @@ private final class StatusTrioAudioEventMonitorFake: StatusTrioAudioEventMonitor
     }
 }
 
-private final class StatusTrioFakeReader: StatusTrioSystemReading, @unchecked Sendable {
+private final class DuoStatusProFakeReader: DuoStatusProSystemReading, @unchecked Sendable {
     private let lock = NSLock()
-    private var storedBattery: StatusTrioBatteryStatus
-    private var storedWiFi: StatusTrioWiFiStatus
-    private var storedVolume: StatusTrioVolumeStatus
+    private var storedBattery: DuoStatusProBatteryStatus
+    private var storedWiFi: DuoStatusProWiFiStatus
+    private var storedVolume: DuoStatusProVolumeStatus
     private var batteryReads = 0
     private var wifiReads = 0
     private var volumeReads = 0
     private var wasOnMainThread = false
-    private var storedLastWiFiPath: StatusTrioNetworkPathSnapshot?
+    private var storedLastWiFiPath: DuoStatusProNetworkPathSnapshot?
 
     init(
-        battery: StatusTrioBatteryStatus = .unknown,
-        wifi: StatusTrioWiFiStatus = .unknown,
-        volume: StatusTrioVolumeStatus = .unknown
+        battery: DuoStatusProBatteryStatus = .unknown,
+        wifi: DuoStatusProWiFiStatus = .unknown,
+        volume: DuoStatusProVolumeStatus = .unknown
     ) {
         storedBattery = battery
         storedWiFi = wifi
         storedVolume = volume
     }
 
-    var battery: StatusTrioBatteryStatus {
+    var battery: DuoStatusProBatteryStatus {
         get { lock.withLock { storedBattery } }
         set { lock.withLock { storedBattery = newValue } }
     }
 
-    var wifi: StatusTrioWiFiStatus {
+    var wifi: DuoStatusProWiFiStatus {
         get { lock.withLock { storedWiFi } }
         set { lock.withLock { storedWiFi = newValue } }
     }
 
-    var volume: StatusTrioVolumeStatus {
+    var volume: DuoStatusProVolumeStatus {
         get { lock.withLock { storedVolume } }
         set { lock.withLock { storedVolume = newValue } }
     }
@@ -285,9 +285,9 @@ private final class StatusTrioFakeReader: StatusTrioSystemReading, @unchecked Se
     var volumeReadCount: Int { lock.withLock { volumeReads } }
     var readCount: Int { lock.withLock { batteryReads + wifiReads + volumeReads } }
     var ranOnMainThread: Bool { lock.withLock { wasOnMainThread } }
-    var lastWiFiPath: StatusTrioNetworkPathSnapshot? { lock.withLock { storedLastWiFiPath } }
+    var lastWiFiPath: DuoStatusProNetworkPathSnapshot? { lock.withLock { storedLastWiFiPath } }
 
-    func readBattery() -> StatusTrioBatteryStatus {
+    func readBattery() -> DuoStatusProBatteryStatus {
         lock.withLock {
             batteryReads += 1
             wasOnMainThread = wasOnMainThread || Thread.isMainThread
@@ -295,7 +295,7 @@ private final class StatusTrioFakeReader: StatusTrioSystemReading, @unchecked Se
         }
     }
 
-    func readWiFi(path: StatusTrioNetworkPathSnapshot?) -> StatusTrioWiFiStatus {
+    func readWiFi(path: DuoStatusProNetworkPathSnapshot?) -> DuoStatusProWiFiStatus {
         lock.withLock {
             wifiReads += 1
             storedLastWiFiPath = path
@@ -304,7 +304,7 @@ private final class StatusTrioFakeReader: StatusTrioSystemReading, @unchecked Se
         }
     }
 
-    func readVolume() -> StatusTrioVolumeStatus {
+    func readVolume() -> DuoStatusProVolumeStatus {
         lock.withLock {
             volumeReads += 1
             wasOnMainThread = wasOnMainThread || Thread.isMainThread
@@ -315,14 +315,14 @@ private final class StatusTrioFakeReader: StatusTrioSystemReading, @unchecked Se
 
 /// Blocks the first battery read until released so a stop/start cycle can be
 /// exercised while a read is in flight.
-private final class StatusTrioBlockingReader: StatusTrioSystemReading, @unchecked Sendable {
+private final class DuoStatusProBlockingReader: DuoStatusProSystemReading, @unchecked Sendable {
     private let lock = NSLock()
     private let semaphore = DispatchSemaphore(value: 0)
     private var readCount = 0
 
     var hasStarted: Bool { lock.withLock { readCount > 0 } }
 
-    func readBattery() -> StatusTrioBatteryStatus {
+    func readBattery() -> DuoStatusProBatteryStatus {
         let count = lock.withLock {
             readCount += 1
             return readCount
@@ -330,15 +330,15 @@ private final class StatusTrioBlockingReader: StatusTrioSystemReading, @unchecke
         if count == 1 {
             _ = semaphore.wait(timeout: .now() + 5)
         }
-        return StatusTrioBatteryStatus(rawPercentage: count == 1 ? 10 : 90, isPresent: true)
+        return DuoStatusProBatteryStatus(rawPercentage: count == 1 ? 10 : 90, isPresent: true)
     }
 
-    func readWiFi(path _: StatusTrioNetworkPathSnapshot?) -> StatusTrioWiFiStatus {
-        StatusTrioWiFiStatus(state: .connected, rssi: -50)
+    func readWiFi(path _: DuoStatusProNetworkPathSnapshot?) -> DuoStatusProWiFiStatus {
+        DuoStatusProWiFiStatus(state: .connected, rssi: -50)
     }
 
-    func readVolume() -> StatusTrioVolumeStatus {
-        StatusTrioVolumeStatus(scalar: 0.5)
+    func readVolume() -> DuoStatusProVolumeStatus {
+        DuoStatusProVolumeStatus(scalar: 0.5)
     }
 
     func release() {

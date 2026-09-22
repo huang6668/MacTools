@@ -1,12 +1,12 @@
-# Status Trio
+# Duo Status Pro
 
-Status Trio (`status-trio`) is a PluginKit v7 plugin for MacTools 1.3.1 or later. It displays one menu-bar icon that combines the Mac's battery level, Wi-Fi or network connection, and output volume: a battery ring around the outside, a network glyph in the center, and volume dots or an arc along the edge. When audio plays through a Bluetooth device, the center can show a Bluetooth glyph instead.
+Duo Status Pro (`duo-status-pro`) is a PluginKit v7 plugin for MacTools 1.3.1 or later. It displays one menu-bar icon that combines the Mac's battery level, Wi-Fi or network connection, and output volume: a battery ring around the outside, a network glyph in the center, and volume dots or an arc along the edge. When audio plays through a Bluetooth device, the center can show a Bluetooth glyph instead. It can also hide the system battery and Wi-Fi icons so the combined icon replaces them.
 
 The icon and its rendering rules are adapted from the [Status Trio](https://github.com/lingyired/status-trio) project by lingyired, licensed under the [Apache License 2.0](../../Sources/Resources/ThirdPartyNotices/status-trio-LICENSE.txt). Only the combined menu-bar icon is ported; the upstream popover, Dock presence, and other surfaces are not part of this plugin.
 
 ## Use
 
-Install the plugin from the Marketplace. **Status Trio > Menu Bar > Display Mode** offers **Separate Icon** (default) and **Replace App Icon**. There is no additional visibility switch, Dashboard component, or Feature Panel entry. Hover for battery, Wi-Fi, connection, and volume details. With a separate icon, either mouse button opens plugin settings. With replacement, the original MacTools panel click behavior is preserved.
+Install the plugin from the Marketplace. **Duo Status Pro > Menu Bar > Display Mode** offers **Separate Icon** (default) and **Replace App Icon**. There is no additional visibility switch, Dashboard component, or Feature Panel entry. Hover for battery, Wi-Fi, connection, and volume details. With a separate icon, either mouse button opens plugin settings. With replacement, the original MacTools panel click behavior is preserved.
 
 Replacement uses the [host's exclusive icon interface](menu-bar-icons.md), not direct access to its button. If another plugin such as Duo Status already owns the primary icon, the mode remains unchanged and an inline error names that plugin; pending updates instead explain that a restart is needed to access its settings. Switching back or uninstalling restores the original MacTools artwork, including custom or animated icons. The host keeps its click behavior, saved position, and automation badge. Separate mode has its own status item and saved position.
 
@@ -28,6 +28,13 @@ All settings apply immediately to both display modes.
 - **Volume**: choose dots or an arc.
 - **Bluetooth**: let a Bluetooth output device replace the network glyph, and choose whether network errors still win.
 - **Ring**: pick a light, regular, or bold stroke weight. Volume dots scale with the ring so the icon stays balanced.
+- **Menu Bar**: hide the system battery icon and the system Wi-Fi icon independently, so this plugin's combined icon replaces them instead of sitting beside them.
+
+### Hiding the system battery and Wi-Fi icons
+
+The two hide switches are independent: hide only the battery, only Wi-Fi, both, or neither. Each writes the matching Control Center visibility preference and restarts Control Center, which briefly refreshes the menu bar. macOS owns these icons, so a short flicker during the restart is expected.
+
+The plugin records each icon's visibility before its first change and restores that recorded state when you turn the switch off, or when the plugin is disabled or uninstalled. Hot updates intentionally skip the restore, because the process restart completes the unload. If Control Center does not pick up a change, toggling the switch again reapplies it.
 
 ## Lifecycle and privacy
 
@@ -37,20 +44,23 @@ Losing the host capability, disabling or uninstalling the plugin, and replacing 
 
 The plugin uses native IOKit, CoreWLAN, Network, SystemConfiguration, and CoreAudio APIs. It does not read SSIDs, request location access, test internet endpoints, collect history, use the network, or send telemetry. It persists only its own icon settings; placement is stored by the host and is not duplicated in plugin preferences. Unknown and unavailable hardware states remain explicit.
 
+Hiding the system icons writes only the two Control Center menu-bar visibility preferences and restarts Control Center. It reads no other Control Center settings and changes nothing else in the user's menu bar.
+
 ## Development
 
-Plugin implementation, localization, and adjacent tests live under `Plugins/StatusTrio`. Its `project.yml` declares only the required system frameworks. Generic primary-icon arbitration lives in Core and the optional public contracts live in PluginKit; the host does not contain Status Trio-specific rendering or settings. Source files adapted from upstream carry an attribution comment, and the retained license text is listed in `Sources/Resources/ThirdPartyNotices/manifest.json`.
+Plugin implementation, localization, and adjacent tests live under `Plugins/DuoStatusPro`. Its `project.yml` declares only the required system frameworks. Generic primary-icon arbitration lives in Core and the optional public contracts live in PluginKit; the host does not contain Duo Status Pro-specific rendering or settings. Source files adapted from upstream carry an attribution comment, and the retained license text is listed in `Sources/Resources/ThirdPartyNotices/manifest.json`.
 
 ```sh
 make generate
-make build-plugin PLUGIN=StatusTrio
+make build-plugin PLUGIN=DuoStatusPro
 xcodebuild -project MacTools.xcodeproj -scheme MacTools -configuration Debug \
   -derivedDataPath build/DerivedData test -quiet \
-  -only-testing:MacToolsTests/StatusTrioPluginTests \
-  -only-testing:MacToolsTests/StatusTrioIconRendererTests \
-  -only-testing:MacToolsTests/StatusTrioIconMappingsTests \
-  -only-testing:MacToolsTests/StatusTrioSystemMonitorTests \
-  -only-testing:MacToolsTests/StatusTrioWiFiClassifierTests
+  -only-testing:MacToolsTests/DuoStatusProPluginTests \
+  -only-testing:MacToolsTests/DuoStatusProIconRendererTests \
+  -only-testing:MacToolsTests/DuoStatusProIconMappingsTests \
+  -only-testing:MacToolsTests/DuoStatusProSystemMonitorTests \
+  -only-testing:MacToolsTests/DuoStatusProWiFiClassifierTests \
+  -only-testing:MacToolsTests/DuoStatusProSystemIconControllerTests
 make script-tests
 ```
 

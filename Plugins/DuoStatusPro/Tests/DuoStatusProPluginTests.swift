@@ -1,16 +1,16 @@
 import MacToolsPluginKit
 import XCTest
 @testable import MacTools
-@testable import StatusTrioPlugin
+@testable import DuoStatusProPlugin
 
 @MainActor
-final class StatusTrioPluginTests: XCTestCase {
+final class DuoStatusProPluginTests: XCTestCase {
     func testActivationCreatesStandaloneItemAndStartsMonitorOnlyAfterHostContext() throws {
         let storage = StorageFake()
         let monitor = MonitorFake()
         let menuBar = MenuBarFake()
-        let context = PluginRuntimeContext(pluginID: StatusTrioPlugin.pluginID, storage: storage)
-        let plugin = StatusTrioPlugin(context: context, monitor: monitor, menuBar: menuBar)
+        let context = PluginRuntimeContext(pluginID: DuoStatusProPlugin.pluginID, storage: storage)
+        let plugin = DuoStatusProPlugin(context: context, monitor: monitor, menuBar: menuBar)
         XCTAssertFalse(plugin.panelItems.contains { $0.kind == .row })
         XCTAssertTrue(plugin.permissionRequirements.isEmpty)
         XCTAssertEqual(plugin.settingsPage?.body.layout, .form)
@@ -24,7 +24,7 @@ final class StatusTrioPluginTests: XCTestCase {
         menuBar.openSettings?()
         XCTAssertEqual(settingsRequests, 0)
 
-        let defaults = UserDefaults(suiteName: "StatusTrioPluginTests-\(UUID().uuidString)")!
+        let defaults = UserDefaults(suiteName: "DuoStatusProPluginTests-\(UUID().uuidString)")!
         let coordinator = PluginMenuBarIconCoordinator(userDefaults: defaults)
         coordinator.synchronize(with: [plugin], pendingPluginIDs: [])
         XCTAssertEqual(monitor.startCount, 1)
@@ -110,7 +110,7 @@ final class StatusTrioPluginTests: XCTestCase {
         XCTAssertEqual(fixture.plugin.options.batteryCriticalThreshold, 35)
         fixture.plugin.handleSettingsAction(.setSelection(controlID: "ring-stroke-style", optionID: "bold"))
 
-        let restored = StatusTrioPlugin(context: fixture.context, monitor: MonitorFake(), menuBar: MenuBarFake())
+        let restored = DuoStatusProPlugin(context: fixture.context, monitor: MonitorFake(), menuBar: MenuBarFake())
         XCTAssertEqual(restored.options.volumeDisplayStyle, .arc)
         XCTAssertTrue(restored.options.showsBatteryPercentage)
         XCTAssertEqual(restored.options.batteryCriticalThreshold, 35)
@@ -164,7 +164,7 @@ final class StatusTrioPluginTests: XCTestCase {
             XCTAssertTrue(fixture.menuBar.isVisible)
             var settingsRequests = 0
             fixture.plugin.requestSettingsPresentation = { settingsRequests += 1 }
-            fixture.coordinator.unregister(pluginID: StatusTrioPlugin.pluginID, reason: reason)
+            fixture.coordinator.unregister(pluginID: DuoStatusProPlugin.pluginID, reason: reason)
             fixture.plugin.deactivate(reason: reason)
             XCTAssertFalse(fixture.monitor.isRunning)
             XCTAssertFalse(fixture.menuBar.isVisible)
@@ -202,8 +202,8 @@ final class StatusTrioPluginTests: XCTestCase {
         let storage = StorageFake()
         let monitor = MonitorFake()
         let menuBar = MenuBarFake()
-        let context = PluginRuntimeContext(pluginID: StatusTrioPlugin.pluginID, storage: storage)
-        var plugin: StatusTrioPlugin? = StatusTrioPlugin(context: context, monitor: monitor, menuBar: menuBar)
+        let context = PluginRuntimeContext(pluginID: DuoStatusProPlugin.pluginID, storage: storage)
+        var plugin: DuoStatusProPlugin? = DuoStatusProPlugin(context: context, monitor: monitor, menuBar: menuBar)
         weak let weakPlugin = plugin
         plugin?.activate(context: context)
         plugin = nil
@@ -266,7 +266,7 @@ final class StatusTrioPluginTests: XCTestCase {
         fixture.plugin.deactivate(reason: .hostShutdown)
         let menuBar = MenuBarFake()
         let monitor = MonitorFake()
-        let restored = StatusTrioPlugin(context: fixture.context, monitor: monitor, menuBar: menuBar)
+        let restored = DuoStatusProPlugin(context: fixture.context, monitor: monitor, menuBar: menuBar)
         restored.activate(context: fixture.context)
         XCTAssertEqual(menuBar.creationCount, 0)
         XCTAssertEqual(monitor.startCount, 0)
@@ -279,7 +279,7 @@ final class StatusTrioPluginTests: XCTestCase {
 
     func testFactoryAndManifestAgreeOnSettingsOnlyCapabilities() throws {
         let fixture = Fixture()
-        let provider = try StatusTrioPluginFactory.makeProvider(context: fixture.context)
+        let provider = try DuoStatusProPluginFactory.makeProvider(context: fixture.context)
         let plugins = provider.makePlugins()
         XCTAssertEqual(plugins.count, 1)
         let plugin = try XCTUnwrap(plugins.first)
@@ -301,16 +301,16 @@ final class StatusTrioPluginTests: XCTestCase {
         let monitor = MonitorFake()
         let menuBar = MenuBarFake()
         let context: PluginRuntimeContext
-        let plugin: StatusTrioPlugin
-        let suiteName = "StatusTrioPluginTests-\(UUID().uuidString)"
+        let plugin: DuoStatusProPlugin
+        let suiteName = "DuoStatusProPluginTests-\(UUID().uuidString)"
         let defaults: UserDefaults
         let coordinator: PluginMenuBarIconCoordinator
 
         init() {
             defaults = UserDefaults(suiteName: suiteName)!
             coordinator = PluginMenuBarIconCoordinator(userDefaults: defaults)
-            context = PluginRuntimeContext(pluginID: StatusTrioPlugin.pluginID, storage: storage)
-            plugin = StatusTrioPlugin(context: context, monitor: monitor, menuBar: menuBar)
+            context = PluginRuntimeContext(pluginID: DuoStatusProPlugin.pluginID, storage: storage)
+            plugin = DuoStatusProPlugin(context: context, monitor: monitor, menuBar: menuBar)
             coordinator.synchronize(with: [plugin], pendingPluginIDs: [])
         }
 
@@ -325,9 +325,9 @@ private struct MissingRowError: Error {
 }
 
 @MainActor
-private final class MonitorFake: StatusTrioMonitoring {
-    var snapshot = StatusTrioSnapshot.unknown
-    var onChange: ((StatusTrioSnapshot) -> Void)?
+private final class MonitorFake: DuoStatusProMonitoring {
+    var snapshot = DuoStatusProSnapshot.unknown
+    var onChange: ((DuoStatusProSnapshot) -> Void)?
     private(set) var isRunning = false
     private(set) var startCount = 0
 
@@ -340,23 +340,23 @@ private final class MonitorFake: StatusTrioMonitoring {
     func stop() { isRunning = false }
     func refresh() {}
 
-    func emit(_ snapshot: StatusTrioSnapshot) {
+    func emit(_ snapshot: DuoStatusProSnapshot) {
         self.snapshot = snapshot
         onChange?(snapshot)
     }
 }
 
 @MainActor
-private final class MenuBarFake: StatusTrioMenuBarPresenting {
+private final class MenuBarFake: DuoStatusProMenuBarPresenting {
     var openSettings: (() -> Void)?
-    private(set) var snapshot: StatusTrioSnapshot?
-    private(set) var options: StatusTrioIconOptions?
+    private(set) var snapshot: DuoStatusProSnapshot?
+    private(set) var options: DuoStatusProIconOptions?
     private(set) var tooltip: String?
     private(set) var isVisible = false
     private(set) var updateCount = 0
     private(set) var creationCount = 0
 
-    func update(snapshot: StatusTrioSnapshot, options: StatusTrioIconOptions, tooltip: String) {
+    func update(snapshot: DuoStatusProSnapshot, options: DuoStatusProIconOptions, tooltip: String) {
         if !isVisible { creationCount += 1 }
         isVisible = true
         self.snapshot = snapshot

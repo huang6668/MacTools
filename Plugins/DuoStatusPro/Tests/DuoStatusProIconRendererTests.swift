@@ -1,16 +1,16 @@
 import AppKit
 import XCTest
-@testable import StatusTrioPlugin
+@testable import DuoStatusProPlugin
 
 @MainActor
-final class StatusTrioIconRendererTests: XCTestCase {
+final class DuoStatusProIconRendererTests: XCTestCase {
     func testImageUsesRequestedSizeAndDrawsInsideBounds() throws {
-        let image = StatusTrioIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light)
-        XCTAssertEqual(image.size, StatusTrioIconRenderer.defaultSize)
+        let image = DuoStatusProIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light)
+        XCTAssertEqual(image.size, DuoStatusProIconRenderer.defaultSize)
         let pixels = try alphaPixels(image)
         XCTAssertTrue(pixels.contains { $0 > 0 })
 
-        let custom = StatusTrioIconRenderer.image(
+        let custom = DuoStatusProIconRenderer.image(
             for: connectedSnapshot, options: .default, appearance: .dark, pointSize: NSSize(width: 44, height: 30)
         )
         XCTAssertEqual(custom.size, NSSize(width: 44, height: 30))
@@ -18,37 +18,37 @@ final class StatusTrioIconRendererTests: XCTestCase {
     }
 
     func testNeutralStateIsTemplateAndStatusColorsAreNot() throws {
-        let neutral = StatusTrioIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light)
+        let neutral = DuoStatusProIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light)
         XCTAssertTrue(neutral.isTemplate)
         XCTAssertFalse(try rgbaPixels(neutral).contains { $0.isRed || $0.isGreen || $0.isBlue })
 
         var charging = connectedSnapshot
         charging.battery.isCharging = true
         charging.battery.isConnectedToPower = true
-        let chargingImage = StatusTrioIconRenderer.image(for: charging, options: .default, appearance: .light)
+        let chargingImage = DuoStatusProIconRenderer.image(for: charging, options: .default, appearance: .light)
         XCTAssertFalse(chargingImage.isTemplate)
         XCTAssertTrue(try rgbaPixels(chargingImage).contains(where: \.isGreen))
 
         var critical = connectedSnapshot
         critical.battery.rawPercentage = 10
-        let criticalImage = StatusTrioIconRenderer.image(for: critical, options: .default, appearance: .light)
+        let criticalImage = DuoStatusProIconRenderer.image(for: critical, options: .default, appearance: .light)
         XCTAssertFalse(criticalImage.isTemplate)
         XCTAssertTrue(try rgbaPixels(criticalImage).contains(where: \.isRed))
 
         var bluetooth = connectedSnapshot
         bluetooth.volume.isBluetoothOutput = true
-        let bluetoothImage = StatusTrioIconRenderer.image(for: bluetooth, options: .default, appearance: .light)
+        let bluetoothImage = DuoStatusProIconRenderer.image(for: bluetooth, options: .default, appearance: .light)
         XCTAssertFalse(bluetoothImage.isTemplate)
         XCTAssertTrue(try rgbaPixels(bluetoothImage).contains(where: \.isBlue))
     }
 
     func testDisabledStatusColorsKeepTemplateForChargingAndCritical() throws {
-        var options = StatusTrioIconOptions.default
+        var options = DuoStatusProIconOptions.default
         options.usesBatteryStatusColors = false
         var charging = connectedSnapshot
         charging.battery.isCharging = true
         charging.battery.rawPercentage = 5
-        let image = StatusTrioIconRenderer.image(for: charging, options: options, appearance: .light)
+        let image = DuoStatusProIconRenderer.image(for: charging, options: options, appearance: .light)
         XCTAssertTrue(image.isTemplate)
         XCTAssertFalse(try rgbaPixels(image).contains { $0.isRed || $0.isGreen })
     }
@@ -56,17 +56,17 @@ final class StatusTrioIconRendererTests: XCTestCase {
     func testBluetoothGlyphYieldsToNetworkErrorWhenPrioritized() throws {
         var snapshot = connectedSnapshot
         snapshot.volume.isBluetoothOutput = true
-        snapshot.wifi = StatusTrioWiFiStatus(state: .off)
-        let image = StatusTrioIconRenderer.image(for: snapshot, options: .default, appearance: .light)
+        snapshot.wifi = DuoStatusProWiFiStatus(state: .off)
+        let image = DuoStatusProIconRenderer.image(for: snapshot, options: .default, appearance: .light)
         XCTAssertTrue(image.isTemplate)
         XCTAssertFalse(try rgbaPixels(image).contains(where: \.isBlue))
     }
 
     func testLowBatteryChangesRingCoverageOnly() throws {
-        let full = try alphaPixels(StatusTrioIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
+        let full = try alphaPixels(DuoStatusProIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
         var low = connectedSnapshot
         low.battery.rawPercentage = 10
-        let lowPixels = try alphaPixels(StatusTrioIconRenderer.image(for: low, options: .default, appearance: .light))
+        let lowPixels = try alphaPixels(DuoStatusProIconRenderer.image(for: low, options: .default, appearance: .light))
 
         XCTAssertNotEqual(full, lowPixels)
         // The right half of the ring drops from solid to the faint track.
@@ -81,28 +81,28 @@ final class StatusTrioIconRendererTests: XCTestCase {
     func testDarkAppearanceDrawsWhiteForegroundWhenColored() throws {
         var charging = connectedSnapshot
         charging.battery.isCharging = true
-        let light = try rgbaPixels(StatusTrioIconRenderer.image(for: charging, options: .default, appearance: .light))
-        let dark = try rgbaPixels(StatusTrioIconRenderer.image(for: charging, options: .default, appearance: .dark))
+        let light = try rgbaPixels(DuoStatusProIconRenderer.image(for: charging, options: .default, appearance: .light))
+        let dark = try rgbaPixels(DuoStatusProIconRenderer.image(for: charging, options: .default, appearance: .dark))
         XCTAssertTrue(light.contains { $0.alpha > 200 && max($0.red, $0.green, $0.blue) < 10 })
         XCTAssertTrue(dark.contains { min($0.red, $0.green, $0.blue, $0.alpha) > 200 })
         XCTAssertTrue(dark.contains(where: \.isGreen))
     }
 
     func testTopGapContentDiffersBetweenBoltPlugPercentageAndEmpty() throws {
-        let empty = try alphaPixels(StatusTrioIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
+        let empty = try alphaPixels(DuoStatusProIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
 
         var charging = connectedSnapshot
         charging.battery.isCharging = true
         charging.battery.isConnectedToPower = true
-        let bolt = try alphaPixels(StatusTrioIconRenderer.image(for: charging, options: .default, appearance: .light))
+        let bolt = try alphaPixels(DuoStatusProIconRenderer.image(for: charging, options: .default, appearance: .light))
 
         var plugged = connectedSnapshot
         plugged.battery.isConnectedToPower = true
-        let plug = try alphaPixels(StatusTrioIconRenderer.image(for: plugged, options: .default, appearance: .light))
+        let plug = try alphaPixels(DuoStatusProIconRenderer.image(for: plugged, options: .default, appearance: .light))
 
-        var percentageOptions = StatusTrioIconOptions.default
+        var percentageOptions = DuoStatusProIconOptions.default
         percentageOptions.showsBatteryPercentage = true
-        let percentage = try alphaPixels(StatusTrioIconRenderer.image(for: connectedSnapshot, options: percentageOptions, appearance: .light))
+        let percentage = try alphaPixels(DuoStatusProIconRenderer.image(for: connectedSnapshot, options: percentageOptions, appearance: .light))
 
         let top = { (pixels: [UInt8]) in self.region(pixels, x: 0..<48, y: 34..<48) }
         XCTAssertNotEqual(top(empty), top(bolt))
@@ -120,30 +120,30 @@ final class StatusTrioIconRendererTests: XCTestCase {
     }
 
     func testVolumeDotsAndArcDifferAndTrackLevel() throws {
-        let dots = try alphaPixels(StatusTrioIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
-        var arcOptions = StatusTrioIconOptions.default
+        let dots = try alphaPixels(DuoStatusProIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
+        var arcOptions = DuoStatusProIconOptions.default
         arcOptions.volumeDisplayStyle = .arc
-        let arc = try alphaPixels(StatusTrioIconRenderer.image(for: connectedSnapshot, options: arcOptions, appearance: .light))
+        let arc = try alphaPixels(DuoStatusProIconRenderer.image(for: connectedSnapshot, options: arcOptions, appearance: .light))
         XCTAssertNotEqual(region(dots, x: 0..<48, y: 0..<10), region(arc, x: 0..<48, y: 0..<10))
         XCTAssertEqual(region(dots, x: 0..<48, y: 14..<48), region(arc, x: 0..<48, y: 14..<48))
 
         var muted = connectedSnapshot
         muted.volume.isMuted = true
-        let mutedDots = try alphaPixels(StatusTrioIconRenderer.image(for: muted, options: .default, appearance: .light))
+        let mutedDots = try alphaPixels(DuoStatusProIconRenderer.image(for: muted, options: .default, appearance: .light))
         XCTAssertNotEqual(region(dots, x: 0..<48, y: 0..<10), region(mutedDots, x: 0..<48, y: 0..<10))
         XCTAssertGreaterThan(try XCTUnwrap(region(dots, x: 0..<48, y: 0..<10).max()), try XCTUnwrap(region(mutedDots, x: 0..<48, y: 0..<10).max()))
     }
 
     func testNetworkStatesProduceDistinctCenterGlyphs() throws {
         let center = { (image: NSImage) in try self.region(self.alphaPixels(image), x: 14..<34, y: 14..<34) }
-        let connected = try center(StatusTrioIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
+        let connected = try center(DuoStatusProIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
         XCTAssertTrue(connected.contains { $0 > 0 })
 
         var seen: [[UInt8]] = [connected]
-        for state: StatusTrioWiFiState in [.off, .noInternet, .hotspot, .temporary, .shared, .notAssociated] {
+        for state: DuoStatusProWiFiState in [.off, .noInternet, .hotspot, .temporary, .shared, .notAssociated] {
             var snapshot = connectedSnapshot
-            snapshot.wifi = StatusTrioWiFiStatus(state: state)
-            let glyph = try center(StatusTrioIconRenderer.image(for: snapshot, options: .default, appearance: .light))
+            snapshot.wifi = DuoStatusProWiFiStatus(state: state)
+            let glyph = try center(DuoStatusProIconRenderer.image(for: snapshot, options: .default, appearance: .light))
             XCTAssertTrue(glyph.contains { $0 > 0 }, "\(state) should draw a center glyph")
             XCTAssertFalse(seen.contains(glyph), "\(state) should not repeat another state's glyph")
             seen.append(glyph)
@@ -151,31 +151,31 @@ final class StatusTrioIconRendererTests: XCTestCase {
 
         var ethernet = connectedSnapshot
         ethernet.connection = .ethernet
-        let ethernetGlyph = try center(StatusTrioIconRenderer.image(for: ethernet, options: .default, appearance: .light))
+        let ethernetGlyph = try center(DuoStatusProIconRenderer.image(for: ethernet, options: .default, appearance: .light))
         XCTAssertNotEqual(ethernetGlyph, connected)
 
-        var wifiForEthernet = StatusTrioIconOptions.default
+        var wifiForEthernet = DuoStatusProIconOptions.default
         wifiForEthernet.showsWiFiIconForEthernet = true
-        XCTAssertEqual(try center(StatusTrioIconRenderer.image(for: ethernet, options: wifiForEthernet, appearance: .light)), connected)
+        XCTAssertEqual(try center(DuoStatusProIconRenderer.image(for: ethernet, options: wifiForEthernet, appearance: .light)), connected)
     }
 
     func testWeakSignalChangesWiFiGlyphWithoutTouchingRing() throws {
-        let strong = try alphaPixels(StatusTrioIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
+        let strong = try alphaPixels(DuoStatusProIconRenderer.image(for: connectedSnapshot, options: .default, appearance: .light))
         var weak = connectedSnapshot
         weak.wifi.rssi = -85
-        let weakPixels = try alphaPixels(StatusTrioIconRenderer.image(for: weak, options: .default, appearance: .light))
+        let weakPixels = try alphaPixels(DuoStatusProIconRenderer.image(for: weak, options: .default, appearance: .light))
         XCTAssertNotEqual(region(strong, x: 14..<34, y: 14..<34), region(weakPixels, x: 14..<34, y: 14..<34))
         XCTAssertEqual(region(strong, x: 0..<8, y: 8..<40), region(weakPixels, x: 0..<8, y: 8..<40))
     }
 
     // MARK: Helpers
 
-    private var connectedSnapshot: StatusTrioSnapshot {
-        var snapshot = StatusTrioSnapshot()
-        snapshot.battery = StatusTrioBatteryStatus(rawPercentage: 80, isPresent: true)
-        snapshot.wifi = StatusTrioWiFiStatus(state: .connected, rssi: -50)
+    private var connectedSnapshot: DuoStatusProSnapshot {
+        var snapshot = DuoStatusProSnapshot()
+        snapshot.battery = DuoStatusProBatteryStatus(rawPercentage: 80, isPresent: true)
+        snapshot.wifi = DuoStatusProWiFiStatus(state: .connected, rssi: -50)
         snapshot.connection = .wifi
-        snapshot.volume = StatusTrioVolumeStatus(scalar: 0.5)
+        snapshot.volume = DuoStatusProVolumeStatus(scalar: 0.5)
         return snapshot
     }
 

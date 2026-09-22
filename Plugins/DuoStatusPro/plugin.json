@@ -1,50 +1,50 @@
 {
-  "id": "status-trio",
-  "displayName": "Status Trio",
+  "id": "duo-status-pro",
+  "displayName": "Duo Status Pro",
   "summary": "Wi-Fi、电量与音量合一的菜单栏图标",
   "localizedMetadata": {
     "en": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi, battery, and volume combined into one menu bar icon."
     },
     "zh-Hans": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi、电量与音量合一的菜单栏图标"
     },
     "zh-Hant": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi、電量與音量合一的選單列圖示"
     },
     "ja": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi、バッテリー、音量をひとつのメニューバーアイコンに"
     },
     "ko": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi, 배터리, 음량을 하나의 메뉴 막대 아이콘으로"
     },
     "de": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "WLAN, Batterie und Lautstärke in einem Menüleistensymbol."
     },
     "fr": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi, batterie et volume réunis dans une seule icône de la barre des menus."
     },
     "es": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi, batería y volumen en un solo icono de la barra de menús."
     },
     "pt": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi, bateria e volume num único ícone da barra de menus."
     },
     "ru": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi, батарея и громкость в одном значке строки меню."
     },
     "ar": {
-      "displayName": "Status Trio",
+      "displayName": "Duo Status Pro",
       "summary": "Wi-Fi والبطارية ومستوى الصوت في أيقونة واحدة في شريط القوائم."
     }
   },
@@ -55,11 +55,11 @@
   "version": "1.0.0",
   "minHostVersion": "1.3.1",
   "pluginKitVersion": 7,
-  "bundleRelativePath": "StatusTrio.bundle",
-  "factoryClass": "StatusTrioPlugin.StatusTrioPluginFactory",
+  "bundleRelativePath": "DuoStatusPro.bundle",
+  "factoryClass": "DuoStatusProPlugin.DuoStatusProPluginFactory",
   "build": {
     "project": "../../MacTools.xcodeproj",
-    "scheme": "StatusTrioPlugin"
+    "scheme": "DuoStatusProPlugin"
   },
   "capabilities": {
     "panelItems": [],
@@ -76,7 +76,7 @@
       }
     ],
     "screenshots": [],
-    "documentationURL": "https://github.com/ggbond268/MacTools/blob/main/docs/plugins/status-trio.md",
+    "documentationURL": "https://github.com/ggbond268/MacTools/blob/main/docs/plugins/duo-status-pro.md",
     "supportURL": "https://github.com/ggbond268/MacTools/issues",
     "publisher": "MacTools",
     "license": "GPL-3.0-only"
@@ -93,7 +93,7 @@
     ],
     "localizedSynonyms": {
       "en": [
-        "Status Trio"
+        "Duo Status Pro"
       ],
       "zh-Hans": [
         "三合一状态"

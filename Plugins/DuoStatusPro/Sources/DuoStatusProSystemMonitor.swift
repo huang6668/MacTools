@@ -11,27 +11,27 @@ import OSLog
 
 private let statusTrioMonitorLogger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "cc.ggbond.mactools",
-    category: "StatusTrioSystemMonitor"
+    category: "DuoStatusProSystemMonitor"
 )
 
 // MARK: - Network path monitoring
 
 @MainActor
-protocol StatusTrioNetworkPathMonitoring: AnyObject {
-    var onChange: (@Sendable (StatusTrioNetworkPathSnapshot) -> Void)? { get set }
+protocol DuoStatusProNetworkPathMonitoring: AnyObject {
+    var onChange: (@Sendable (DuoStatusProNetworkPathSnapshot) -> Void)? { get set }
     func start(queue: DispatchQueue)
     func cancel()
 }
 
 @MainActor
-final class StatusTrioSystemNetworkPathMonitor: StatusTrioNetworkPathMonitoring {
-    var onChange: (@Sendable (StatusTrioNetworkPathSnapshot) -> Void)?
+final class DuoStatusProSystemNetworkPathMonitor: DuoStatusProNetworkPathMonitoring {
+    var onChange: (@Sendable (DuoStatusProNetworkPathSnapshot) -> Void)?
     private let monitor = NWPathMonitor()
 
     func start(queue: DispatchQueue) {
         let onChange = onChange
         monitor.pathUpdateHandler = { path in
-            onChange?(StatusTrioNetworkPathSnapshot(
+            onChange?(DuoStatusProNetworkPathSnapshot(
                 isSatisfied: path.status == .satisfied,
                 usesWiFi: path.usesInterfaceType(.wifi),
                 usesWiredEthernet: path.usesInterfaceType(.wiredEthernet),
@@ -53,7 +53,7 @@ final class StatusTrioSystemNetworkPathMonitor: StatusTrioNetworkPathMonitoring 
 /// Delivers "something about the default output changed" on the main actor.
 /// Implementations own their CoreAudio listener registrations.
 @MainActor
-protocol StatusTrioAudioEventMonitoring: AnyObject {
+protocol DuoStatusProAudioEventMonitoring: AnyObject {
     func start(onChange: @escaping @MainActor @Sendable () -> Void)
     /// Re-targets device listeners when the default output device moved.
     func reconcile()
@@ -61,7 +61,7 @@ protocol StatusTrioAudioEventMonitoring: AnyObject {
 }
 
 @MainActor
-final class StatusTrioCoreAudioEventMonitor: StatusTrioAudioEventMonitoring {
+final class DuoStatusProCoreAudioEventMonitor: DuoStatusProAudioEventMonitoring {
     private struct Registration {
         let objectID: AudioObjectID
         let address: AudioObjectPropertyAddress
@@ -90,7 +90,7 @@ final class StatusTrioCoreAudioEventMonitor: StatusTrioAudioEventMonitoring {
 
     func reconcile() {
         guard isRunning else { return }
-        let currentDeviceID = StatusTrioCoreAudio.validDefaultOutputDevice()
+        let currentDeviceID = DuoStatusProCoreAudio.validDefaultOutputDevice()
         guard currentDeviceID != registeredDeviceID || deviceRegistrations.isEmpty else { return }
         removeDeviceListeners()
         registeredDeviceID = currentDeviceID
@@ -136,9 +136,9 @@ final class StatusTrioCoreAudioEventMonitor: StatusTrioAudioEventMonitoring {
                 self?.volumeDidChange()
             }
         }
-        for element in StatusTrioCoreAudio.outputElements {
+        for element in DuoStatusProCoreAudio.outputElements {
             for selector in [kAudioDevicePropertyVolumeScalar, kAudioDevicePropertyMute] {
-                guard StatusTrioCoreAudio.hasProperty(
+                guard DuoStatusProCoreAudio.hasProperty(
                     objectID: deviceID,
                     selector: selector,
                     scope: kAudioObjectPropertyScopeOutput,
@@ -209,16 +209,16 @@ final class StatusTrioCoreAudioEventMonitor: StatusTrioAudioEventMonitoring {
 // MARK: - Monitor
 
 @MainActor
-protocol StatusTrioMonitoring: AnyObject {
-    var snapshot: StatusTrioSnapshot { get }
-    var onChange: ((StatusTrioSnapshot) -> Void)? { get set }
+protocol DuoStatusProMonitoring: AnyObject {
+    var snapshot: DuoStatusProSnapshot { get }
+    var onChange: ((DuoStatusProSnapshot) -> Void)? { get set }
     func start()
     func stop()
     func refresh()
 }
 
 @MainActor
-final class StatusTrioSystemMonitor: StatusTrioMonitoring {
+final class DuoStatusProSystemMonitor: DuoStatusProMonitoring {
     typealias NotificationSourceFactory = (UnsafeMutableRawPointer) -> CFRunLoopSource?
 
     /// Which system reads a refresh performs. Events only re-read what they
@@ -232,47 +232,47 @@ final class StatusTrioSystemMonitor: StatusTrioMonitoring {
     }
 
     private struct Reading: Sendable {
-        var battery: StatusTrioBatteryStatus?
-        var wifi: StatusTrioWiFiStatus?
-        var volume: StatusTrioVolumeStatus?
+        var battery: DuoStatusProBatteryStatus?
+        var wifi: DuoStatusProWiFiStatus?
+        var volume: DuoStatusProVolumeStatus?
     }
 
-    private(set) var snapshot: StatusTrioSnapshot = .unknown
-    var onChange: ((StatusTrioSnapshot) -> Void)?
+    private(set) var snapshot: DuoStatusProSnapshot = .unknown
+    var onChange: ((DuoStatusProSnapshot) -> Void)?
 
-    private let reader: any StatusTrioSystemReading
-    private let networkMonitorFactory: @MainActor () -> any StatusTrioNetworkPathMonitoring
-    private let audioEventMonitorFactory: @MainActor () -> any StatusTrioAudioEventMonitoring
+    private let reader: any DuoStatusProSystemReading
+    private let networkMonitorFactory: @MainActor () -> any DuoStatusProNetworkPathMonitoring
+    private let audioEventMonitorFactory: @MainActor () -> any DuoStatusProAudioEventMonitoring
     private let notificationSourceFactory: NotificationSourceFactory
     private let workspaceNotificationCenter: NotificationCenter
     private let processInfoNotificationCenter: NotificationCenter
     private let refreshInterval: TimeInterval
-    private let queue = DispatchQueue(label: "com.mactools.status-trio", qos: .utility)
+    private let queue = DispatchQueue(label: "com.mactools.duo-status-pro", qos: .utility)
 
-    private var networkMonitor: (any StatusTrioNetworkPathMonitoring)?
-    private var audioEventMonitor: (any StatusTrioAudioEventMonitoring)?
+    private var networkMonitor: (any DuoStatusProNetworkPathMonitoring)?
+    private var audioEventMonitor: (any DuoStatusProAudioEventMonitoring)?
     private var powerSource: CFRunLoopSource?
     private var wakeObserver: NSObjectProtocol?
     private var powerStateObserver: NSObjectProtocol?
     private var timer: Timer?
-    private var latestPath: StatusTrioNetworkPathSnapshot?
+    private var latestPath: DuoStatusProNetworkPathSnapshot?
     private var isRunning = false
     private var generation: UInt64 = 0
     private var isReading = false
     private var pendingScope: RefreshScope = []
 
     init(
-        reader: any StatusTrioSystemReading = StatusTrioSystemReader(),
-        networkMonitorFactory: @escaping @MainActor () -> any StatusTrioNetworkPathMonitoring = {
-            StatusTrioSystemNetworkPathMonitor()
+        reader: any DuoStatusProSystemReading = DuoStatusProSystemReader(),
+        networkMonitorFactory: @escaping @MainActor () -> any DuoStatusProNetworkPathMonitoring = {
+            DuoStatusProSystemNetworkPathMonitor()
         },
-        audioEventMonitorFactory: @escaping @MainActor () -> any StatusTrioAudioEventMonitoring = {
-            StatusTrioCoreAudioEventMonitor()
+        audioEventMonitorFactory: @escaping @MainActor () -> any DuoStatusProAudioEventMonitoring = {
+            DuoStatusProCoreAudioEventMonitor()
         },
         notificationSourceFactory: @escaping NotificationSourceFactory = { context in
             IOPSNotificationCreateRunLoopSource({ context in
                 guard let context else { return }
-                let monitor = Unmanaged<StatusTrioSystemMonitor>
+                let monitor = Unmanaged<DuoStatusProSystemMonitor>
                     .fromOpaque(context)
                     .takeUnretainedValue()
                 Task { @MainActor in monitor.refresh(.battery) }
@@ -434,7 +434,7 @@ final class StatusTrioSystemMonitor: StatusTrioMonitoring {
         }
     }
 
-    private func publish(_ updated: StatusTrioSnapshot) {
+    private func publish(_ updated: DuoStatusProSnapshot) {
         guard updated != snapshot else { return }
         snapshot = updated
         onChange?(updated)

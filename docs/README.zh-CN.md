@@ -19,7 +19,7 @@
 | 系统设置与配置方案 | [Mac 设置](plugins/mac-settings.md) |
 | 菜单栏自定义 | [隐藏菜单栏图标](plugins/menu-bar-hidden.md) · [自定义图标](plugins/menu-bar-icons.md) |
 | 音频控制 | [应用音量](plugins/app-volume.md) · [显示器音量](plugins/display-volume.md) |
-| 监控 | [设备电量](plugins/device-battery.md) · [Duo 状态](plugins/duo-status.md) · [Status Trio](plugins/status-trio.md) · [AI 用量](plugins/ai-usage.md) |
+| 监控 | [设备电量](plugins/device-battery.md) · [Duo 状态](plugins/duo-status.md) · [Duo Status Pro](plugins/duo-status-pro.md) · [AI 用量](plugins/ai-usage.md) |
 | Siri | [使用与限制](plugins/siri.md) |
 
 ## 开发
