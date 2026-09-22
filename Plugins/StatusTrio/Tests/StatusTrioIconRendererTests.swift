@@ -109,8 +109,14 @@ final class StatusTrioIconRendererTests: XCTestCase {
         XCTAssertNotEqual(top(bolt), top(plug))
         XCTAssertNotEqual(top(plug), top(percentage))
         XCTAssertNotEqual(top(percentage), top(empty))
-        // Nothing below the ring's top changes across gap variants.
-        XCTAssertEqual(region(empty, x: 0..<48, y: 0..<14), region(bolt, x: 0..<48, y: 0..<14))
+        // Only a single alpha level of platform-specific antialiasing may vary below the top gap.
+        XCTAssertLessThanOrEqual(
+            maximumAlphaDifference(
+                region(empty, x: 0..<48, y: 0..<14),
+                region(bolt, x: 0..<48, y: 0..<14)
+            ),
+            1
+        )
     }
 
     func testVolumeDotsAndArcDifferAndTrackLevel() throws {
@@ -210,5 +216,9 @@ final class StatusTrioIconRendererTests: XCTestCase {
     /// Samples a 48 x 48 grid in artwork coordinates: y grows upward from the bottom edge.
     private func region(_ pixels: [UInt8], x: Range<Int>, y: Range<Int>) -> [UInt8] {
         y.flatMap { row in x.map { column in pixels[(47 - row) * 48 + column] } }
+    }
+
+    private func maximumAlphaDifference(_ lhs: [UInt8], _ rhs: [UInt8]) -> Int {
+        zip(lhs, rhs).map { abs(Int($0) - Int($1)) }.max() ?? 0
     }
 }
