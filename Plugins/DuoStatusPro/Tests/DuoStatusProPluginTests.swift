@@ -295,6 +295,37 @@ final class DuoStatusProPluginTests: XCTestCase {
         XCTAssertNoThrow(try PluginSettingsValidator.validate(try XCTUnwrap(plugin.settingsPage)))
     }
 
+    func testInvokeOpensControlCenterSettingsOnUnsupportedOS() throws {
+        try XCTSkipIf(
+            DuoStatusProSystemIconController.isSupported,
+            "The action only appears on macOS 26 and later."
+        )
+        var openedURLs: [URL] = []
+        let fixture = Fixture()
+        let plugin = DuoStatusProPlugin(
+            context: fixture.context,
+            monitor: MonitorFake(),
+            menuBar: MenuBarFake(),
+            openURL: { openedURLs.append($0) }
+        )
+
+        guard case let .form(sections) = plugin.settingsPage?.body else {
+            return XCTFail("Missing form")
+        }
+        let rows = sections.flatMap { section -> [PluginSettingsRow] in
+            if case let .rows(rows) = section.content { return rows }
+            return []
+        }
+        let actionRow = try XCTUnwrap(rows.first { $0.id == "open-system-icon-settings" })
+        guard case .action = actionRow.control else {
+            return XCTFail("Expected the macOS 26+ system icon row to be an action")
+        }
+
+        plugin.handleSettingsAction(.invoke(controlID: "open-system-icon-settings"))
+
+        XCTAssertEqual(openedURLs, [DuoStatusProSystemIconController.controlCenterSettingsURL])
+    }
+
     @MainActor
     private final class Fixture {
         let storage = StorageFake()

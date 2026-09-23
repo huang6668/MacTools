@@ -28,13 +28,15 @@ All settings apply immediately to both display modes.
 - **Volume**: choose dots or an arc.
 - **Bluetooth**: let a Bluetooth output device replace the network glyph, and choose whether network errors still win.
 - **Ring**: pick a light, regular, or bold stroke weight. Volume dots scale with the ring so the icon stays balanced.
-- **Menu Bar**: hide the system battery icon and the system Wi-Fi icon independently, so this plugin's combined icon replaces them instead of sitting beside them.
+- **Menu Bar**: hide the system battery icon and the system Wi-Fi icon independently, so this plugin's combined icon replaces them instead of sitting beside them. On macOS 26 and later, the plugin opens System Settings > Control Center instead, where the same menu-bar controls are available.
 
 ### Hiding the system battery and Wi-Fi icons
 
-The two hide switches are independent: hide only the battery, only Wi-Fi, both, or neither. Each writes the matching Control Center visibility preference and restarts Control Center, which briefly refreshes the menu bar. macOS owns these icons, so a short flicker during the restart is expected.
+On macOS 25 and earlier, the two hide switches are independent: hide only the battery, only Wi-Fi, both, or neither. Each writes the matching Control Center visibility preference and restarts Control Center, which briefly refreshes the menu bar. macOS owns these icons, so a short flicker during the restart is expected.
 
 The plugin records each icon's visibility before its first change and restores that recorded state when you turn the switch off, or when the plugin is disabled or uninstalled. Hot updates intentionally skip the restore, because the process restart completes the unload. If Control Center does not pick up a change, toggling the switch again reapplies it.
+
+On macOS 26 and later, ControlCenter no longer reads the preference key used by the switches, so the plugin offers a single action under **Menu Bar** that opens **System Settings > Control Center**. Use the native Battery and Wi-Fi menu-bar controls there instead.
 
 ## Lifecycle and privacy
 
@@ -44,7 +46,7 @@ Losing the host capability, disabling or uninstalling the plugin, and replacing 
 
 The plugin uses native IOKit, CoreWLAN, Network, SystemConfiguration, and CoreAudio APIs. It does not read SSIDs, request location access, test internet endpoints, collect history, use the network, or send telemetry. It persists only its own icon settings; placement is stored by the host and is not duplicated in plugin preferences. Unknown and unavailable hardware states remain explicit.
 
-Hiding the system icons writes only the two Control Center menu-bar visibility preferences and restarts Control Center. It reads no other Control Center settings and changes nothing else in the user's menu bar.
+On macOS 25 and earlier, hiding the system icons writes only the two Control Center menu-bar visibility preferences and restarts Control Center. It reads no other Control Center settings and changes nothing else in the user's menu bar. On macOS 26 and later, the action only opens the Apple System Settings page and performs no writes.
 
 ## Development
 

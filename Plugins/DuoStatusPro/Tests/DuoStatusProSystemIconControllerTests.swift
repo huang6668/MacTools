@@ -30,7 +30,7 @@ final class DuoStatusProSystemIconControllerTests: XCTestCase {
 
     func testHidingOneIconLeavesTheOtherUntouched() {
         let backend = FakeBackend()
-        let controller = DuoStatusProSystemIconController(backend: backend)
+        let controller = DuoStatusProSystemIconController(backend: backend, preferencesSupported: true)
 
         controller.apply(hideBattery: true, hideWiFi: false)
 
@@ -42,7 +42,7 @@ final class DuoStatusProSystemIconControllerTests: XCTestCase {
 
     func testReapplyingTheSameStateDoesNotRestartControlCenter() {
         let backend = FakeBackend()
-        let controller = DuoStatusProSystemIconController(backend: backend)
+        let controller = DuoStatusProSystemIconController(backend: backend, preferencesSupported: true)
 
         controller.apply(hideBattery: true, hideWiFi: true)
         let writesAfterFirstApply = backend.writes.count
@@ -54,7 +54,7 @@ final class DuoStatusProSystemIconControllerTests: XCTestCase {
     func testRestoreReturnsIconsToTheStateRecordedBeforeTheFirstChange() {
         // Wi-Fi was already hidden by the user before the plugin touched anything.
         let backend = FakeBackend(visibility: [.battery: true, .wifi: false])
-        let controller = DuoStatusProSystemIconController(backend: backend)
+        let controller = DuoStatusProSystemIconController(backend: backend, preferencesSupported: true)
 
         controller.apply(hideBattery: true, hideWiFi: true)
         controller.restore()
@@ -65,7 +65,7 @@ final class DuoStatusProSystemIconControllerTests: XCTestCase {
 
     func testRestoreWithoutAnyPriorChangeIsANoOp() {
         let backend = FakeBackend()
-        let controller = DuoStatusProSystemIconController(backend: backend)
+        let controller = DuoStatusProSystemIconController(backend: backend, preferencesSupported: true)
 
         controller.restore()
 
@@ -75,7 +75,7 @@ final class DuoStatusProSystemIconControllerTests: XCTestCase {
 
     func testUnhidingAfterHidingRestoresVisibilityWithoutRestore() {
         let backend = FakeBackend()
-        let controller = DuoStatusProSystemIconController(backend: backend)
+        let controller = DuoStatusProSystemIconController(backend: backend, preferencesSupported: true)
 
         controller.apply(hideBattery: true, hideWiFi: true)
         controller.apply(hideBattery: false, hideWiFi: false)

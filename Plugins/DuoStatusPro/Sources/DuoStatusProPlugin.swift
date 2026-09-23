@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import MacToolsPluginKit
 import SwiftUI
@@ -47,6 +48,7 @@ final class DuoStatusProPlugin: MacToolsPlugin, PluginSettingsPresenting,
         static let ringStrokeStyle = "ring-stroke-style"
         static let hidesSystemBattery = "hides-system-battery"
         static let hidesSystemWiFi = "hides-system-wifi"
+        static let openSystemIconSettings = "open-system-icon-settings"
     }
 
     var onStateChange: (() -> Void)?
@@ -61,6 +63,7 @@ final class DuoStatusProPlugin: MacToolsPlugin, PluginSettingsPresenting,
     private let localization: PluginLocalization
     private let monitor: any DuoStatusProMonitoring
     private let menuBar: any DuoStatusProMenuBarPresenting
+    private let openURL: @MainActor (URL) -> Void
     private let optionsStore: DuoStatusProOptionsStore
     private let systemIconController = DuoStatusProSystemIconController()
     private(set) var options: DuoStatusProIconOptions
@@ -78,8 +81,10 @@ final class DuoStatusProPlugin: MacToolsPlugin, PluginSettingsPresenting,
     init(
         context: PluginRuntimeContext,
         monitor: (any DuoStatusProMonitoring)? = nil,
-        menuBar: (any DuoStatusProMenuBarPresenting)? = nil
+        menuBar: (any DuoStatusProMenuBarPresenting)? = nil,
+        openURL: @escaping @MainActor (URL) -> Void = { NSWorkspace.shared.open($0) }
     ) {
+        self.openURL = openURL
         localization = PluginLocalization(bundle: context.resourceBundle)
         optionsStore = DuoStatusProOptionsStore(storage: context.storage)
         options = optionsStore.load()
@@ -128,7 +133,29 @@ final class DuoStatusProPlugin: MacToolsPlugin, PluginSettingsPresenting,
     }
 
     private var menuBarSection: PluginSettingsSection {
-        PluginSettingsSection(
+        let placementRows: [PluginSettingsRow] = [
+            PluginSettingsRow(
+                id: SettingsID.placement,
+                title: localization.string("settings.placement", defaultValue: "显示方式"),
+                description: placement == .primary
+                    ? localization.string("settings.primaryDescription", defaultValue: "替换 MacTools 主图标，点击行为保持不变。")
+                    : localization.string("settings.standaloneDescription", defaultValue: "独立显示，悬停查看状态，点击打开设置。"),
+                error: placementErrorMessage,
+                isEnabled: menuBarIconHostContext != nil,
+                control: .picker(
+                    selectionID: placement.rawValue,
+                    options: [
+                        .init(id: PluginMenuBarIconPlacement.standalone.rawValue,
+                              title: localization.string("settings.standalone", defaultValue: "独立图标")),
+                        .init(id: PluginMenuBarIconPlacement.primary.rawValue,
+                              title: localization.string("settings.primary", defaultValue: "替换应用图标"))
+                    ],
+                    style: .segmented
+                )
+            )
+        ]
+
+        return PluginSettingsSection(
             id: SettingsID.menuBarSection,
             title: localization.string("settings.menuBar", defaultValue: "菜单栏"),
             systemImage: "menubar.rectangle",
@@ -136,45 +163,7 @@ final class DuoStatusProPlugin: MacToolsPlugin, PluginSettingsPresenting,
                 "settings.footer",
                 defaultValue: "圆弧显示电量，圆点显示 Wi-Fi 信号，底部显示音量。"
             ),
-            rows: [
-                PluginSettingsRow(
-                    id: SettingsID.placement,
-                    title: localization.string("settings.placement", defaultValue: "显示方式"),
-                    description: placement == .primary
-                        ? localization.string("settings.primaryDescription", defaultValue: "替换 MacTools 主图标，点击行为保持不变。")
-                        : localization.string("settings.standaloneDescription", defaultValue: "独立显示，悬停查看状态，点击打开设置。"),
-                    error: placementErrorMessage,
-                    isEnabled: menuBarIconHostContext != nil,
-                    control: .picker(
-                        selectionID: placement.rawValue,
-                        options: [
-                            .init(id: PluginMenuBarIconPlacement.standalone.rawValue,
-                                  title: localization.string("settings.standalone", defaultValue: "独立图标")),
-                            .init(id: PluginMenuBarIconPlacement.primary.rawValue,
-                                  title: localization.string("settings.primary", defaultValue: "替换应用图标"))
-                        ],
-                        style: .segmented
-                    )
-                ),
-                PluginSettingsRow(
-                    id: SettingsID.hidesSystemBattery,
-                    title: localization.string("settings.hidesSystemBattery", defaultValue: "隐藏系统电量图标"),
-                    description: localization.string(
-                        "settings.hidesSystemBatteryDescription",
-                        defaultValue: "隐藏 macOS 菜单栏中的系统电量图标，由本插件替代显示。"
-                    ),
-                    control: .toggle(isOn: options.hidesSystemBattery)
-                ),
-                PluginSettingsRow(
-                    id: SettingsID.hidesSystemWiFi,
-                    title: localization.string("settings.hidesSystemWiFi", defaultValue: "隐藏系统 Wi-Fi 图标"),
-                    description: localization.string(
-                        "settings.hidesSystemWiFiDescription",
-                        defaultValue: "隐藏 macOS 菜单栏中的系统 Wi-Fi 图标，由本插件替代显示。"
-                    ),
-                    control: .toggle(isOn: options.hidesSystemWiFi)
-                )
-            ]
+            rows: placementRows + systemIconSettingsRows
         )
     }
 
@@ -384,7 +373,11 @@ final class DuoStatusProPlugin: MacToolsPlugin, PluginSettingsPresenting,
             var updated = options
             updated.batteryCriticalThreshold = DuoStatusProOptionsStore.clampedThreshold(Int(value.rounded()))
             commit(updated)
-        case .setText, .invoke:
+        case let .invoke(controlID):
+            if controlID == SettingsID.openSystemIconSettings {
+                openSystemIconSettings()
+            }
+        case .setText:
             return
         }
     }
@@ -453,6 +446,56 @@ final class DuoStatusProPlugin: MacToolsPlugin, PluginSettingsPresenting,
             placementError = error
         }
         onStateChange?()
+    }
+
+    private var systemIconSettingsRows: [PluginSettingsRow] {
+        if DuoStatusProSystemIconController.isSupported {
+            return [
+                PluginSettingsRow(
+                    id: SettingsID.hidesSystemBattery,
+                    title: localization.string("settings.hidesSystemBattery", defaultValue: "隐藏系统电量图标"),
+                    description: localization.string(
+                        "settings.hidesSystemBatteryDescription",
+                        defaultValue: "隐藏 macOS 菜单栏中的系统电量图标，由本插件替代显示。"
+                    ),
+                    control: .toggle(isOn: options.hidesSystemBattery)
+                ),
+                PluginSettingsRow(
+                    id: SettingsID.hidesSystemWiFi,
+                    title: localization.string("settings.hidesSystemWiFi", defaultValue: "隐藏系统 Wi-Fi 图标"),
+                    description: localization.string(
+                        "settings.hidesSystemWiFiDescription",
+                        defaultValue: "隐藏 macOS 菜单栏中的系统 Wi-Fi 图标，由本插件替代显示。"
+                    ),
+                    control: .toggle(isOn: options.hidesSystemWiFi)
+                )
+            ]
+        }
+
+        return [
+            PluginSettingsRow(
+                id: SettingsID.openSystemIconSettings,
+                title: localization.string(
+                    "settings.openSystemIconSettings",
+                    defaultValue: "隐藏系统电量与 Wi-Fi 图标"
+                ),
+                description: localization.string(
+                    "settings.openSystemIconSettingsDescription",
+                    defaultValue: "macOS 26 起可在系统设置的“控制中心”中管理菜单栏图标。"
+                ),
+                control: .action(
+                    title: localization.string(
+                        "settings.openSystemIconSettingsAction",
+                        defaultValue: "打开系统设置"
+                    ),
+                    role: .normal
+                )
+            )
+        ]
+    }
+
+    private func openSystemIconSettings() {
+        openURL(DuoStatusProSystemIconController.controlCenterSettingsURL)
     }
 
     /// Applies and persists new options, then refreshes every icon surface.

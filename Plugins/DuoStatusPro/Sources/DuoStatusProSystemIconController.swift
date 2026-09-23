@@ -27,18 +27,37 @@ protocol DuoStatusProSystemIconBackend {
 final class DuoStatusProSystemIconController {
     typealias SystemIcon = DuoStatusProSystemIcon
 
+    /// macOS 26 (Darwin 27) migrated the menu-bar workflow and ControlCenter no
+    /// longer reads the NSStatusItem Visible preference key. The feature has no
+    /// effect on that OS and later.
+    static let isSupported: Bool =
+        ProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26
+
+    static let controlCenterSettingsURL = URL(
+        string: "x-apple.systempreferences:com.apple.ControlCenter-Settings.extension"
+    )!
+
     private let backend: any DuoStatusProSystemIconBackend
+    private let preferencesSupported: Bool
     private var originalVisibility: [SystemIcon: Bool] = [:]
     private var pendingRestartTask: Task<Void, Never>?
 
-    init(backend: (any DuoStatusProSystemIconBackend)? = nil) {
+    init(
+        backend: (any DuoStatusProSystemIconBackend)? = nil,
+        preferencesSupported: Bool? = nil
+    ) {
         self.backend = backend ?? DuoStatusProControlCenterBackend()
+        self.preferencesSupported = preferencesSupported ?? Self.isSupported
     }
 
     /// Applies the desired hide state for each icon. Restarts ControlCenter once
     /// if any visibility changed. The restart is debounced by one run-loop cycle
     /// so rapid successive calls coalesce into a single restart.
+    ///
+    /// On macOS 26 and later ControlCenter no longer reads the NSStatusItem
+    /// Visible preference key, so this method is a no-op on those versions.
     func apply(hideBattery: Bool, hideWiFi: Bool) {
+        guard preferencesSupported else { return }
         var changed = false
 
         for icon in SystemIcon.allCases {
