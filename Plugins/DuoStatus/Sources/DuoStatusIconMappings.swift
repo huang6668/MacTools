@@ -37,6 +37,18 @@ enum DuoStatusIconMappings {
         return 4
     }
 
+    /// Filled share of the volume bar, 0...1. Missing, muted, and non-finite
+    /// readings leave only the track, matching four unlit dots.
+    static func volumeBarFraction(scalar: Double?, isMuted: Bool) -> Double {
+        guard !isMuted, let scalar, scalar.isFinite else { return 0 }
+        return min(1, max(0, scalar))
+    }
+
+    /// Whether the bottom of the ring draws the continuous volume bar instead of dots.
+    static func usesVolumeBar(options: DuoStatusIconOptions) -> Bool {
+        options.bottomIndicator == .volume && options.volumeStyle == .bar
+    }
+
     /// First match wins: a critically low level outranks charging, so a Mac
     /// charging at a very low level still shows the warning colour.
     ///

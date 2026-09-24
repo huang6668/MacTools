@@ -213,6 +213,35 @@ final class DuoStatusPluginTests: XCTestCase {
         XCTAssertTrue(try XCTUnwrap(fixture.menuBar.tooltip).contains("50%"))
     }
 
+    func testVolumeStyleIsOfferedOnlyForVolumeAndSurvivesRelaunch() throws {
+        let fixture = Fixture()
+        fixture.plugin.activate(context: fixture.context)
+        XCTAssertFalse(try settingsRowIDs(fixture.plugin).contains("volume-style"))
+
+        fixture.plugin.handleSettingsAction(.setSelection(controlID: "bottom-indicator", optionID: "volume"))
+        XCTAssertTrue(try settingsRowIDs(fixture.plugin).contains("volume-style"))
+        fixture.plugin.handleSettingsAction(.setSelection(controlID: "volume-style", optionID: "bar"))
+        XCTAssertEqual(fixture.menuBar.options?.volumeStyle, .bar)
+
+        let menuBar = MenuBarFake()
+        let relaunched = DuoStatusPlugin(context: fixture.context, monitor: MonitorFake(), menuBar: menuBar)
+        let coordinator = PluginMenuBarIconCoordinator(userDefaults: fixture.defaults)
+        coordinator.synchronize(with: [relaunched], pendingPluginIDs: [])
+        relaunched.activate(context: fixture.context)
+        XCTAssertEqual(menuBar.options?.volumeStyle, .bar)
+    }
+
+    private func settingsRowIDs(_ plugin: DuoStatusPlugin) throws -> [String] {
+        guard case let .form(sections) = plugin.settingsPage?.body else {
+            XCTFail("Missing form")
+            return []
+        }
+        return sections.flatMap { section -> [String] in
+            guard case let .rows(rows) = section.content else { return [] }
+            return rows.map(\.id)
+        }
+    }
+
     private func tooltipText(for wifi: DuoSystemStatusSnapshot.WiFi) throws -> String {
         let fixture = Fixture()
         fixture.plugin.activate(context: fixture.context)

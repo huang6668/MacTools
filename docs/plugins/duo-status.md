@@ -17,7 +17,7 @@ Replacement uses the [host's exclusive icon interface](menu-bar-icons.md), not d
 - The battery percentage can be shown in the ring's top gap, so it sits beside the network glyph instead of replacing it. You can also keep the charging mark instead of the number while connected to power.
 - The center represents the active network connection, including Wi-Fi and Ethernet. Connection state does not establish that internet access works.
 - Connected without internet access, personal hotspot, temporary networks, and Internet Sharing each have a dedicated glyph. Each one is off by default and falls back to the plain Wi-Fi fan, while the tooltip always names the precise state.
-- Four dots at the bottom represent Wi-Fi signal strength, or output volume if you switch them. Missing readings remain unavailable, rather than appearing as a full signal; muted or silent output shows no lit dots. The tooltip says which quantity the dots represent.
+- Four dots at the bottom represent Wi-Fi signal strength, or output volume if you switch them. Volume can instead use a continuous bar along the ring's bottom gap. Missing readings remain unavailable, rather than appearing as a full signal; muted or silent output shows no lit dots and an empty bar. The tooltip says which quantity the bottom indicator represents.
 - When the default output device uses Bluetooth, a Bluetooth glyph can replace the network glyph. Network problems can still take priority over it.
 - Macs without an internal battery show a neutral full ring.
 
@@ -30,7 +30,7 @@ All settings apply immediately to both display modes. Every option beyond the ic
 - **Appearance**: pick a small, medium, or large icon size.
 - **Battery**: show the percentage in the ring's top gap, optionally only while on battery; show the charging indicator; use status colors; set the low-battery threshold used for the warning color.
 - **Network**: separately distinguish connected-without-internet, personal hotspot, temporary networks, and Internet Sharing with their own glyphs.
-- **Volume and audio**: choose whether the bottom dots show Wi-Fi signal or output volume; let a Bluetooth output device replace the network glyph, and choose whether network errors still win.
+- **Volume and audio**: choose whether the bottom indicator shows Wi-Fi signal or output volume, and draw volume as dots or a bar; let a Bluetooth output device replace the network glyph, and choose whether network errors still win.
 
 ## Lifecycle and privacy
 

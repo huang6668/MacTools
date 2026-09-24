@@ -38,6 +38,25 @@ final class DuoStatusIconMappingsTests: XCTestCase {
         XCTAssertEqual(DuoStatusIconMappings.bottomIndicatorSteps(snapshot: snapshot, options: options), 4)
     }
 
+    // MARK: - Volume bar
+
+    func testVolumeBarFollowsTheScalarAndStaysEmptyWhenSilent() {
+        XCTAssertEqual(DuoStatusIconMappings.volumeBarFraction(scalar: 0.37, isMuted: false), 0.37)
+        XCTAssertEqual(DuoStatusIconMappings.volumeBarFraction(scalar: 1.4, isMuted: false), 1)
+        XCTAssertEqual(DuoStatusIconMappings.volumeBarFraction(scalar: -0.2, isMuted: false), 0)
+        XCTAssertEqual(DuoStatusIconMappings.volumeBarFraction(scalar: 0.8, isMuted: true), 0)
+        XCTAssertEqual(DuoStatusIconMappings.volumeBarFraction(scalar: nil, isMuted: false), 0)
+        XCTAssertEqual(DuoStatusIconMappings.volumeBarFraction(scalar: .nan, isMuted: false), 0)
+    }
+
+    func testVolumeBarAppliesOnlyToTheVolumeIndicator() {
+        var options = DuoStatusIconOptions.default
+        options.volumeStyle = .bar
+        XCTAssertFalse(DuoStatusIconMappings.usesVolumeBar(options: options), "Wi-Fi signal always uses dots")
+        options.bottomIndicator = .volume
+        XCTAssertTrue(DuoStatusIconMappings.usesVolumeBar(options: options))
+    }
+
     // MARK: - Battery colour ladder
 
     func testStatusColorsCanBeTurnedOffEntirely() {

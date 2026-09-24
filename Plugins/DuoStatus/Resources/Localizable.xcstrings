@@ -2403,6 +2403,77 @@
         }
       }
     },
+    "settings.footerVolumeBar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The arc shows battery, the center shows network status, and the bottom bar shows volume."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圆弧显示电量，中心显示网络状态，底部进度条显示音量。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圓弧顯示電量，中央顯示網路狀態，底部進度列顯示音量。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "円弧はバッテリー残量、中央はネットワーク状態、下部のバーは音量を示します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "호는 배터리 잔량, 중앙은 네트워크 상태, 아래쪽 막대는 음량을 표시합니다."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Bogen zeigt den Ladestand, die Mitte den Netzwerkstatus und der Balken unten die Lautstärke."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’arc indique la batterie, le centre l’état du réseau et la barre du bas le volume."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El arco muestra la batería, el centro el estado de red y la barra inferior el volumen."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O arco mostra a bateria, o centro o estado da rede e a barra inferior o volume."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дуга показывает заряд, центр — состояние сети, а полоса внизу — громкость."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يعرض القوس البطارية، ويعرض المركز حالة الشبكة، ويعرض الشريط السفلي مستوى الصوت."
+          }
+        }
+      }
+    },
     "settings.appearance": {
       "extractionState": "manual",
       "localizations": {
@@ -4113,67 +4184,67 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bottom Dots"
+            "value": "Bottom Indicator"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "底部圆点"
+            "value": "底部指示"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "底部圓點"
+            "value": "底部指示"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "下部のドット"
+            "value": "下部のインジケータ"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "아래쪽 점"
+            "value": "아래쪽 표시기"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Punkte unten"
+            "value": "Anzeige unten"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Points du bas"
+            "value": "Indicateur du bas"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Puntos inferiores"
+            "value": "Indicador inferior"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pontos inferiores"
+            "value": "Indicador inferior"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Нижние точки"
+            "value": "Нижний индикатор"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "النقاط السفلية"
+            "value": "المؤشر السفلي"
           }
         }
       }
@@ -4184,67 +4255,351 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose what the four dots at the bottom show."
+            "value": "Choose what the bottom of the ring shows."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "选择底部四个圆点显示的内容。"
+            "value": "选择圆环底部显示的内容。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "選擇底部四個圓點顯示的內容。"
+            "value": "選擇圓環底部顯示的內容。"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "下部にある 4 つのドットに表示する内容を選びます。"
+            "value": "リング下部に表示する内容を選びます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "아래쪽 점 네 개에 표시할 내용을 선택합니다."
+            "value": "링 아래쪽에 표시할 내용을 선택합니다."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Legt fest, was die vier Punkte unten anzeigen."
+            "value": "Legt fest, was unten am Ring angezeigt wird."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choisissez ce qu’affichent les quatre points du bas."
+            "value": "Choisissez ce qu’affiche le bas de l’anneau."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elige qué muestran los cuatro puntos inferiores."
+            "value": "Elige qué muestra la parte inferior del anillo."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escolha o que os quatro pontos inferiores mostram."
+            "value": "Escolha o que a parte inferior do anel mostra."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Выберите, что показывают четыре нижние точки."
+            "value": "Выберите, что показывает нижняя часть кольца."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "اختر ما تعرضه النقاط الأربع السفلية."
+            "value": "اختر ما يعرضه الجزء السفلي من الحلقة."
+          }
+        }
+      }
+    },
+    "settings.volumeStyle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume Style"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "音量样式"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "音量樣式"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "音量のスタイル"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "음량 스타일"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lautstärkestil"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Style du volume"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estilo del volumen"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estilo do volume"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Стиль громкости"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نمط مستوى الصوت"
+          }
+        }
+      }
+    },
+    "settings.volumeStyleDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show volume in steps with dots, or continuously with a bar."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以圆点分档显示，或以进度条连续显示。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以圓點分段顯示，或以進度列連續顯示。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドットで段階的に、またはバーで連続的に表示します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "점으로 단계별로 표시하거나 막대로 연속 표시합니다."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lautstärke in Stufen als Punkte oder stufenlos als Balken anzeigen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affiche le volume par paliers avec des points, ou en continu avec une barre."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muestra el volumen por niveles con puntos o de forma continua con una barra."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra o volume em níveis com pontos ou de forma contínua com uma barra."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показывать громкость ступенями точками или плавно полосой."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اعرض مستوى الصوت بمستويات عبر النقاط، أو بشكل متصل عبر شريط."
+          }
+        }
+      }
+    },
+    "settings.volumeStyleDots": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dots"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圆点"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圓點"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドット"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "점"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punkte"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Points"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puntos"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pontos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Точки"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نقاط"
+          }
+        }
+      }
+    },
+    "settings.volumeStyleBar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bar"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "进度条"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "進度列"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バー"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "막대"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balken"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barre"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barra"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barra"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Полоса"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شريط"
           }
         }
       }

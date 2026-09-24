@@ -426,12 +426,17 @@ enum DuoStatusIcon {
         path.stroke()
     }
 
-    /// The four bottom dots read either Wi-Fi signal strength or output volume.
+    /// The four bottom dots read either Wi-Fi signal strength or output volume;
+    /// volume can instead use a continuous bar.
     private static func drawBottomIndicator(
         _ snapshot: DuoSystemStatusSnapshot,
         options: DuoStatusIconOptions,
         color: NSColor
     ) {
+        if DuoStatusIconMappings.usesVolumeBar(options: options) {
+            drawVolumeBar(snapshot.volume, color: color)
+            return
+        }
         let level = min(4, max(0, DuoStatusIconMappings.bottomIndicatorSteps(snapshot: snapshot, options: options)))
 
         let centers: [NSPoint] = [
@@ -445,12 +450,30 @@ enum DuoStatusIcon {
         }
     }
 
+    /// The volume bar follows the battery circle through the bottom gap and spans
+    /// the same width as the dots, filling left to right. The volume arc style is
+    /// adapted from Status Trio (https://github.com/lingyired/status-trio, Apache-2.0).
+    private static func drawVolumeBar(_ volume: DuoSystemStatusSnapshot.Volume, color: NSColor) {
+        let center = NSPoint(x: 9, y: 9.4)
+        let radius: CGFloat = 7.3
+        let lineWidth: CGFloat = 1.35
+        let start: CGFloat = 237
+        let end: CGFloat = 303
+        strokeArc(center: center, radius: radius, start: start, end: end, width: lineWidth,
+                  opacity: 0.22, color: color, clockwise: false)
+
+        let fraction = DuoStatusIconMappings.volumeBarFraction(scalar: volume.scalar, isMuted: volume.isMuted)
+        guard fraction > 0 else { return }
+        strokeArc(center: center, radius: radius, start: start, end: start + (end - start) * CGFloat(fraction),
+                  width: lineWidth, opacity: 1, color: color, clockwise: false)
+    }
+
     private static func strokeArc(
         center: NSPoint, radius: CGFloat, start: CGFloat, end: CGFloat, width: CGFloat, opacity: CGFloat,
-        color: NSColor
+        color: NSColor, clockwise: Bool = true
     ) {
         let path = NSBezierPath()
-        path.appendArc(withCenter: center, radius: radius, startAngle: start, endAngle: end, clockwise: true)
+        path.appendArc(withCenter: center, radius: radius, startAngle: start, endAngle: end, clockwise: clockwise)
         path.lineWidth = width
         path.lineCapStyle = .round
         color.withAlphaComponent(opacity).setStroke()

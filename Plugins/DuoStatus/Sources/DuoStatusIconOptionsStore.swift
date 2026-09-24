@@ -10,6 +10,7 @@ struct DuoStatusIconOptionsStore {
     enum Key {
         static let iconSize = "icon-size"
         static let bottomIndicator = "bottom-indicator"
+        static let volumeStyle = "volume-style"
         static let showsBatteryPercentage = "shows-battery-percentage"
         static let showsPercentageWhenConnected = "shows-percentage-when-connected"
         static let showsChargingIndicator = "shows-charging-indicator"
@@ -43,6 +44,10 @@ struct DuoStatusIconOptionsStore {
         if let raw = storage.string(forKey: Key.bottomIndicator),
            let indicator = DuoStatusBottomIndicator(rawValue: raw) {
             options.bottomIndicator = indicator
+        }
+        if let raw = storage.string(forKey: Key.volumeStyle),
+           let style = DuoStatusVolumeStyle(rawValue: raw) {
+            options.volumeStyle = style
         }
         options.showsBatteryPercentage = bool(
             Key.showsBatteryPercentage, default: options.showsBatteryPercentage
@@ -84,6 +89,7 @@ struct DuoStatusIconOptionsStore {
     func save(_ options: DuoStatusIconOptions) {
         storage.set(options.iconSize.rawValue, forKey: Key.iconSize)
         storage.set(options.bottomIndicator.rawValue, forKey: Key.bottomIndicator)
+        storage.set(options.volumeStyle.rawValue, forKey: Key.volumeStyle)
         storage.set(options.showsBatteryPercentage, forKey: Key.showsBatteryPercentage)
         storage.set(options.showsPercentageWhenConnected, forKey: Key.showsPercentageWhenConnected)
         storage.set(options.showsChargingIndicator, forKey: Key.showsChargingIndicator)

@@ -26,6 +26,15 @@ enum DuoStatusBottomIndicator: String, CaseIterable, Sendable {
     case volume
 }
 
+/// How output volume is drawn at the bottom of the ring. Wi-Fi signal always
+/// uses the dots, because it only ever has four steps.
+enum DuoStatusVolumeStyle: String, CaseIterable, Sendable {
+    /// Four dots, one per quarter of the volume range.
+    case dots
+    /// A continuous bar along the ring's bottom gap.
+    case bar
+}
+
 /// Everything the renderer needs besides the live snapshot. Persisted by the plugin.
 ///
 /// Every option that changes the shipping artwork defaults to off, so an existing
@@ -35,6 +44,7 @@ struct DuoStatusIconOptions: Equatable, Sendable {
 
     var iconSize: DuoStatusIconSize = .small
     var bottomIndicator: DuoStatusBottomIndicator = .wifi
+    var volumeStyle: DuoStatusVolumeStyle = .dots
     var showsBatteryPercentage = false
     var showsPercentageWhenConnected = false
     var showsChargingIndicator = true

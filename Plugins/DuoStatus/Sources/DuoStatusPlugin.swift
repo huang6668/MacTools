@@ -46,6 +46,7 @@ final class DuoStatusPlugin: MacToolsPlugin, PluginSettingsPresenting,
 
         static let audio = "audio"
         static let bottomIndicator = "bottom-indicator"
+        static let volumeStyle = "volume-style"
         static let showsBluetoothAudioGlyph = "shows-bluetooth-audio-glyph"
         static let bluetoothGlyphPrioritizesNetworkErrors = "bluetooth-glyph-prioritizes-network-errors"
     }
@@ -128,15 +129,7 @@ final class DuoStatusPlugin: MacToolsPlugin, PluginSettingsPresenting,
                 id: SettingsID.menuBar,
                 title: localization.string("settings.menuBar", defaultValue: "菜单栏"),
                 systemImage: "menubar.rectangle",
-                footer: options.bottomIndicator == .volume
-                    ? localization.string(
-                        "settings.footerVolume",
-                        defaultValue: "圆弧显示电量，中心显示网络状态，底部圆点显示音量。"
-                    )
-                    : localization.string(
-                        "settings.footer",
-                        defaultValue: "圆弧显示电量，中心显示网络状态，底部圆点显示 Wi-Fi 信号。"
-                    ),
+                footer: menuBarFooter,
                 rows: [
                     PluginSettingsRow(
                         id: SettingsID.placement,
@@ -288,50 +281,92 @@ final class DuoStatusPlugin: MacToolsPlugin, PluginSettingsPresenting,
         )
     }
 
+    private var menuBarFooter: String {
+        if DuoStatusIconMappings.usesVolumeBar(options: options) {
+            return localization.string(
+                "settings.footerVolumeBar",
+                defaultValue: "圆弧显示电量，中心显示网络状态，底部进度条显示音量。"
+            )
+        }
+        if options.bottomIndicator == .volume {
+            return localization.string(
+                "settings.footerVolume",
+                defaultValue: "圆弧显示电量，中心显示网络状态，底部圆点显示音量。"
+            )
+        }
+        return localization.string(
+            "settings.footer",
+            defaultValue: "圆弧显示电量，中心显示网络状态，底部圆点显示 Wi-Fi 信号。"
+        )
+    }
+
     private var audioSection: PluginSettingsSection {
-        PluginSettingsSection(
+        var rows = [
+            PluginSettingsRow(
+                id: SettingsID.bottomIndicator,
+                title: localization.string("settings.bottomIndicator", defaultValue: "底部指示"),
+                description: localization.string(
+                    "settings.bottomIndicatorDescription", defaultValue: "选择圆环底部显示的内容。"
+                ),
+                control: .picker(
+                    selectionID: options.bottomIndicator.rawValue,
+                    options: [
+                        .init(id: DuoStatusBottomIndicator.wifi.rawValue,
+                              title: localization.string("settings.indicatorWiFi", defaultValue: "Wi-Fi 信号")),
+                        .init(id: DuoStatusBottomIndicator.volume.rawValue,
+                              title: localization.string("settings.indicatorVolume", defaultValue: "音量"))
+                    ],
+                    style: .segmented
+                )
+            )
+        ]
+        // Wi-Fi signal only has four steps, so the style choice exists for volume alone.
+        if options.bottomIndicator == .volume {
+            rows.append(PluginSettingsRow(
+                id: SettingsID.volumeStyle,
+                title: localization.string("settings.volumeStyle", defaultValue: "音量样式"),
+                description: localization.string(
+                    "settings.volumeStyleDescription", defaultValue: "以圆点分档显示，或以进度条连续显示。"
+                ),
+                control: .picker(
+                    selectionID: options.volumeStyle.rawValue,
+                    options: [
+                        .init(id: DuoStatusVolumeStyle.dots.rawValue,
+                              title: localization.string("settings.volumeStyleDots", defaultValue: "圆点")),
+                        .init(id: DuoStatusVolumeStyle.bar.rawValue,
+                              title: localization.string("settings.volumeStyleBar", defaultValue: "进度条"))
+                    ],
+                    style: .segmented
+                )
+            ))
+        }
+        rows += [
+            PluginSettingsRow(
+                id: SettingsID.showsBluetoothAudioGlyph,
+                title: localization.string(
+                    "settings.bluetoothGlyph", defaultValue: "蓝牙输出时替换网络图标"
+                ),
+                description: localization.string(
+                    "settings.bluetoothGlyphDescription", defaultValue: "使用蓝牙音频设备时显示蓝牙标记。"
+                ),
+                control: .toggle(isOn: options.showsBluetoothAudioGlyph)
+            ),
+            PluginSettingsRow(
+                id: SettingsID.bluetoothGlyphPrioritizesNetworkErrors,
+                title: localization.string("settings.networkErrorsFirst", defaultValue: "网络异常优先"),
+                description: localization.string(
+                    "settings.networkErrorsFirstDescription",
+                    defaultValue: "网络异常时仍显示网络状态，而不是蓝牙标记。"
+                ),
+                isEnabled: options.showsBluetoothAudioGlyph,
+                control: .toggle(isOn: options.bluetoothGlyphPrioritizesNetworkErrors)
+            )
+        ]
+        return PluginSettingsSection(
             id: SettingsID.audio,
             title: localization.string("settings.audio", defaultValue: "音量与音频"),
             systemImage: "speaker.wave.2",
-            rows: [
-                PluginSettingsRow(
-                    id: SettingsID.bottomIndicator,
-                    title: localization.string("settings.bottomIndicator", defaultValue: "底部圆点"),
-                    description: localization.string(
-                        "settings.bottomIndicatorDescription", defaultValue: "选择底部四个圆点显示的内容。"
-                    ),
-                    control: .picker(
-                        selectionID: options.bottomIndicator.rawValue,
-                        options: [
-                            .init(id: DuoStatusBottomIndicator.wifi.rawValue,
-                                  title: localization.string("settings.indicatorWiFi", defaultValue: "Wi-Fi 信号")),
-                            .init(id: DuoStatusBottomIndicator.volume.rawValue,
-                                  title: localization.string("settings.indicatorVolume", defaultValue: "音量"))
-                        ],
-                        style: .segmented
-                    )
-                ),
-                PluginSettingsRow(
-                    id: SettingsID.showsBluetoothAudioGlyph,
-                    title: localization.string(
-                        "settings.bluetoothGlyph", defaultValue: "蓝牙输出时替换网络图标"
-                    ),
-                    description: localization.string(
-                        "settings.bluetoothGlyphDescription", defaultValue: "使用蓝牙音频设备时显示蓝牙标记。"
-                    ),
-                    control: .toggle(isOn: options.showsBluetoothAudioGlyph)
-                ),
-                PluginSettingsRow(
-                    id: SettingsID.bluetoothGlyphPrioritizesNetworkErrors,
-                    title: localization.string("settings.networkErrorsFirst", defaultValue: "网络异常优先"),
-                    description: localization.string(
-                        "settings.networkErrorsFirstDescription",
-                        defaultValue: "网络异常时仍显示网络状态，而不是蓝牙标记。"
-                    ),
-                    isEnabled: options.showsBluetoothAudioGlyph,
-                    control: .toggle(isOn: options.bluetoothGlyphPrioritizesNetworkErrors)
-                )
-            ]
+            rows: rows
         )
     }
 
@@ -383,6 +418,9 @@ final class DuoStatusPlugin: MacToolsPlugin, PluginSettingsPresenting,
             case SettingsID.bottomIndicator:
                 guard let indicator = DuoStatusBottomIndicator(rawValue: optionID) else { return }
                 updated.bottomIndicator = indicator
+            case SettingsID.volumeStyle:
+                guard let style = DuoStatusVolumeStyle(rawValue: optionID) else { return }
+                updated.volumeStyle = style
             default:
                 return
             }
