@@ -109,10 +109,10 @@
       "gpl3Compatibility": "compatible",
       "relationship": "adapted",
       "products": [
-        "plugin:duo-status-pro"
+        "plugin:duo-status"
       ],
       "paths": [
-        "Plugins/DuoStatusPro"
+        "Plugins/DuoStatus"
       ],
       "licenseFile": "Sources/Resources/ThirdPartyNotices/status-trio-LICENSE.txt"
     },

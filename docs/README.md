@@ -19,7 +19,7 @@ Start with the [English README](../README.md) or [Chinese README](../README.zh-C
 | macOS settings and reusable profiles | [Mac Settings](plugins/mac-settings.md) |
 | Menu bar customization | [Hide Menu Bar Icons](plugins/menu-bar-hidden.md) · [Custom icons](plugins/menu-bar-icons.md) |
 | Audio controls | [App Volume](plugins/app-volume.md) · [Display Volume](plugins/display-volume.md) |
-| Monitoring | [Device Battery](plugins/device-battery.md) · [Duo Status](plugins/duo-status.md) · [Duo Status Pro](plugins/duo-status-pro.md) · [AI Usage](plugins/ai-usage.md) |
+| Monitoring | [Device Battery](plugins/device-battery.md) · [Duo Status](plugins/duo-status.md) · [AI Usage](plugins/ai-usage.md) |
 | Siri | [Usage and limitations](plugins/siri.md) |
 
 ## Development
